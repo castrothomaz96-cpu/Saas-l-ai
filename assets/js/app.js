@@ -532,18 +532,24 @@ function shopView(r) {
     nav: secK || "loja",
     title: sub ? `${title} · ${sub}` : title,
     html: `
+<section class="list-hero">
+  <div class="wrap">
+    ${crumbs([["Início", "#/"], ...(secK ? [["Loja", "#/loja"], [title]] : [[title]])])}
+    <header class="page-head">
+      <span class="eyebrow eyebrow-light">${plural(list.length, "peça", "peças")} · ${plural(new Set(list.map(p => p.b)).size, "grife", "grifes")}</span>
+      <h1 class="light" data-split>${esc(title)}${sub ? ` <em>· ${esc(sub)}</em>` : ""}</h1>
+      <p>${esc(secK ? SECTIONS[secK].d : "Todas as peças da loja, de todas as marcas.")}</p>
+    </header>
+  </div>
+</section>
 <div class="wrap">
-  ${crumbs([["Início", "#/"], ...(secK ? [["Loja", "#/loja"], [title]] : [[title]])])}
-  <header class="page-head">
-    <h1 data-split>${esc(title)}${sub ? ` <em>· ${esc(sub)}</em>` : ""}</h1>
-    <p>${esc(secK ? SECTIONS[secK].d : "Todas as peças da loja, de todas as marcas.")}</p>
-  </header>
   <div class="shop" id="shop">
     <aside class="filters" id="filters" aria-label="Filtros">
       <div class="filters-head"><b>Filtrar</b><button class="icon-btn" data-filters="close" aria-label="Fechar filtros">${ICON.close}</button></div>
-      <div class="facet"><h2>Seção</h2>${secOpts.join("")}</div>
-      ${types.length > 1 ? `<div class="facet"><h2>Tipo de peça</h2>${typeOpts.join("")}</div>` : ""}
-      <div class="facet"><h2>Marca</h2>${brandOpts.join("")}</div>
+      <details class="facet" open><summary><h2>Seção</h2></summary><div class="facet-body">${secOpts.join("")}</div></details>
+      ${types.length > 1 ? `<details class="facet" open><summary><h2>Tipo de peça</h2></summary><div class="facet-body">${typeOpts.join("")}</div></details>` : ""}
+      <details class="facet" open><summary><h2>Marca</h2></summary><div class="facet-body">${brandOpts.slice(0, 9).join("")}${brandOpts.length > 9
+        ? `<details class="facet-more"${brands.slice(8).some(b => b.s === marca) ? " open" : ""}><summary>Mais ${brandOpts.length - 9} marcas</summary>${brandOpts.slice(9).join("")}</details>` : ""}</div></details>
     </aside>
     <div class="shop-main" id="shopMain">
       <div class="toolbar">
