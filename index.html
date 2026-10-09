@@ -8,14 +8,23 @@
 <meta name="theme-color" content="#071529">
 <meta property="og:title" content="L&amp;T Club">
 <meta property="og:description" content="Grifes selecionadas. Atendimento direto pelo WhatsApp.">
+<meta property="og:type" content="website">
 <meta property="og:image" content="img/hero.jpg">
+<meta property="og:image:width" content="736">
+<meta property="og:image:height" content="414">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%23071529'/%3E%3Ctext x='32' y='41' font-family='Georgia,serif' font-size='24' fill='%23C0C7CE' text-anchor='middle'%3EL%26amp;T%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600;700&display=swap">
-<link rel="preload" as="image" href="img/hero.jpg">
 <link rel="stylesheet" href="assets/css/style.css">
-<script>document.documentElement.classList.add("js")</script>
+<script>
+document.documentElement.classList.add("js");
+/* a foto principal só é pré-carregada quando a página aberta é a inicial */
+if (!location.hash || location.hash === "#/" || location.hash === "#") {
+  var l = document.createElement("link"); l.rel = "preload"; l.as = "image"; l.href = "img/hero.jpg"; l.setAttribute("fetchpriority", "high"); document.head.appendChild(l);
+}
+</script>
 </head>
 <body>
 <a class="skip" href="#app">Pular para o conteúdo</a>
@@ -104,7 +113,7 @@
         <div class="ft-social" id="ftSocial"></div>
       </div>
       <div>
-        <h4>Loja</h4>
+        <h2 class="ft-h">Loja</h2>
         <ul>
           <li><a href="#/loja">Novidades</a></li>
           <li><a href="#/loja/vestuario">Vestuário</a></li>
@@ -114,11 +123,11 @@
         </ul>
       </div>
       <div>
-        <h4>Marcas</h4>
+        <h2 class="ft-h">Marcas</h2>
         <ul id="ftBrands"></ul>
       </div>
       <div>
-        <h4>Atendimento</h4>
+        <h2 class="ft-h">Atendimento</h2>
         <ul>
           <li><a href="#/como-comprar">Como comprar</a></li>
           <li><a href="#/favoritos">Favoritos</a></li>
@@ -156,7 +165,7 @@
   <button class="icon-btn zoomer-close" id="zoomClose" aria-label="Fechar">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
   </button>
-  <div class="zoomer-stage" id="zoomStage"><img id="zoomImg" alt=""></div>
+  <button type="button" class="zoomer-stage" id="zoomStage" aria-pressed="false" aria-label="Aproximar ou afastar a foto"><img id="zoomImg" alt=""></button>
   <p class="zoomer-hint">Toque ou clique na foto para aproximar</p>
 </dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>

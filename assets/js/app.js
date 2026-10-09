@@ -126,18 +126,41 @@ function sizesFor(p) {
 }
 
 /* ---------- favoritos e sacola ---------- */
-let favs = store.get("lt-favs", []).filter(r => BY_REF.has(r));
-let bag = store.get("lt-bag", []).filter(it => BY_REF.has(it.r));
+const arr = v => Array.isArray(v) ? v : [];
+let favs = [], bag = [];
+function loadState() {
+  favs = arr(store.get("lt-favs", [])).filter(r => typeof r === "string" && BY_REF.has(r));
+  bag = arr(store.get("lt-bag", [])).filter(it => it && typeof it.r === "string" && BY_REF.has(it.r))
+    .map(it => ({r: it.r, s: typeof it.s === "string" ? it.s : "", q: Math.min(9, Math.max(1, parseInt(it.q, 10) || 1))}));
+}
+loadState();
 const isFav = r => favs.includes(r);
-function toggleFav(r) {
+function syncFavButtons() {
+  $$("[data-fav]").forEach(b => { const on = isFav(b.dataset.fav); b.setAttribute("aria-pressed", on); b.setAttribute("aria-label", on ? "Remover dos favoritos" : "Adicionar aos favoritos"); });
+}
+function toggleFav(r, btn) {
+  loadState();
   favs = isFav(r) ? favs.filter(x => x !== r) : [...favs, r];
   store.set("lt-favs", favs);
-  updateCounts();
-  $$(`[data-fav="${r}"]`).forEach(b => { b.setAttribute("aria-pressed", isFav(r)); b.setAttribute("aria-label", isFav(r) ? "Remover dos favoritos" : "Adicionar aos favoritos"); });
-  toast(isFav(r) ? "Adicionado aos favoritos" : "Removido dos favoritos", isFav(r) ? {label: "Ver favoritos", href: "#/favoritos"} : null);
-  if (parseRoute().parts[0] === "favoritos") render(true);
+  updateCounts(); syncFavButtons();
+  const on = isFav(r);
+  toast(on ? "Adicionado aos favoritos" : "Removido dos favoritos", on ? {label: "Ver favoritos", href: "#/favoritos"} : null);
+  /* na página de favoritos, a peça sai da lista sem recarregar a página inteira */
+  if (!on && parseRoute().parts[0] === "favoritos") {
+    if (!favs.length) { render(true); return; }
+    const el = btn && btn.closest("#grid .card");
+    const next = el && (el.nextElementSibling || el.previousElementSibling);
+    const done = () => {
+      el && el.remove();
+      const lead = $(".page-head p"); if (lead) lead.textContent = `${plural(favs.length, "peça salva", "peças salvas")} neste aparelho.`;
+      next?.querySelector(".fav-btn")?.focus({preventScroll: true});
+    };
+    if (el && el.animate && !reduceMotion.matches) el.animate([{opacity: 1, transform: "none"}, {opacity: 0, transform: "scale(.96)"}], {duration: 280, easing: EASE}).onfinish = done;
+    else done();
+  }
 }
-function addToBag(r, size, fromEl) {
+function addToBag(r, size, fromEl, toastDelay = 0) {
+  loadState();
   const p = BY_REF.get(r);
   const sz = sizesFor(p) ? (size || SIZE_TBD) : "";
   const hit = bag.find(it => it.r === r && it.s === sz);
@@ -145,13 +168,14 @@ function addToBag(r, size, fromEl) {
   store.set("lt-bag", bag);
   updateCounts();
   flyToBag(fromEl, p);
-  toast(`${p.n} na sacola`, {label: "Ver sacola", action: openBag});
-  renderBag();
+  const say = () => toast(`${p.n} na sacola`, {label: "Ver sacola", action: openBag});
+  if (toastDelay) setTimeout(say, toastDelay); else say();
 }
-function setQty(i, q) {
-  if (q <= 0) bag.splice(i, 1); else bag[i].q = Math.min(9, q);
-  store.set("lt-bag", bag); updateCounts(); renderBag();
-}
+addEventListener("storage", e => {
+  if (e.key && e.key !== "lt-bag" && e.key !== "lt-favs") return;
+  loadState(); updateCounts(); syncFavButtons();
+  if (bagEl.classList.contains("open")) renderBag();
+});
 const bagQty = () => bag.reduce((n, it) => n + it.q, 0);
 function updateCounts() {
   const fc = $("#favCount"), bc = $("#bagCount");
@@ -186,7 +210,7 @@ function card(p, i = 0, cls = "") {
   return `<article class="card ${cls}" data-reveal style="--i:${i % 4}">
     <a class="card-link" href="#/p/${esc(p.r)}">
       <span class="ph${alt ? " has-alt" : ""}">
-        <img loading="lazy" decoding="async" src="${esc(p.img[0])}" alt="${esc(p.n + " — " + p.b)}">
+        <img loading="lazy" decoding="async" src="${esc(p.img[0])}" alt="">
         ${alt ? `<img class="alt" loading="lazy" decoding="async" src="${esc(alt)}" alt="">` : ""}
       </span>
       <span class="meta"><span class="brand">${esc(p.b)}</span><span class="name">${esc(p.n)}</span><span class="price">${esc(price(p))}</span></span>
@@ -194,13 +218,13 @@ function card(p, i = 0, cls = "") {
     ${p.x ? `<span class="tag tag-x">${esc(p.x)}</span>` : p.img.length > 1 ? `<span class="tag">${p.img.length} fotos</span>` : ""}
     ${favBtn(p)}
     <div class="card-actions">
-      <button class="ca-btn" data-qv="${esc(p.r)}">${ICON.eye}<span>Visualização rápida</span></button>
+      <button class="ca-btn" data-qv="${esc(p.r)}" aria-label="Visualização rápida: ${esc(p.n)}">${ICON.eye}<span>Ver rápido</span></button>
       <button class="ca-btn ca-add" data-quick="${esc(p.r)}" aria-label="Adicionar ${esc(p.n)} à sacola">${ICON.plus}<span class="sr">Adicionar</span></button>
     </div>
   </article>`;
 }
-function rail(id, items, cls = "") {
-  return `<div class="rail ${cls}" id="${id}" tabindex="0" role="region" aria-label="Lista horizontal — use as setas">${items}</div>`;
+function rail(id, items, cls = "", label = "Lista horizontal") {
+  return `<div class="rail ${cls}" id="${id}" tabindex="0" role="region" aria-label="${esc(label)} — role para o lado ou use as setas">${items}</div>`;
 }
 function railBtns(id) {
   return `<span class="rail-btns"><button class="rail-btn" data-rail="${id}" data-dir="-1" aria-label="Anterior">${ICON.arrowL}</button><button class="rail-btn" data-rail="${id}" data-dir="1" aria-label="Próximo">${ICON.arrowR}</button></span>`;
@@ -213,11 +237,11 @@ function crumbs(items) {
 function sizePicker(p, id) {
   const sizes = sizesFor(p);
   if (!sizes) return `<p class="size-note">Tamanho único.</p>`;
-  return `<fieldset class="sizes" data-sizes="${id}">
-    <legend>Tamanho desejado <button type="button" class="link-btn" data-guide>Guia de medidas</button></legend>
+  return `<fieldset class="sizes" data-sizes="${id}" aria-describedby="szh-${id}">
+    <legend>Tamanho desejado</legend>
     <div class="size-row">${sizes.map(s => `<label class="size"><input type="radio" name="sz-${id}" value="${s}"><span>${s}</span></label>`).join("")}
       <label class="size size-tbd"><input type="radio" name="sz-${id}" value="${SIZE_TBD}"><span>Não sei meu tamanho</span></label></div>
-    <p class="size-help" id="szh-${id}">A disponibilidade de cada tamanho é confirmada pelo WhatsApp.</p>
+    <div class="size-foot"><p class="size-help" id="szh-${id}" aria-live="polite">A disponibilidade de cada tamanho é confirmada pelo WhatsApp.</p><button type="button" class="link-btn" data-guide>Guia de medidas</button></div>
   </fieldset>`;
 }
 const pickedSize = id => { const el = $(`[data-sizes="${id}"] input:checked`); return el ? el.value : ""; };
@@ -226,8 +250,9 @@ function needSize(p, id) {
   const fs = $(`[data-sizes="${id}"]`);
   if (fs) {
     fs.classList.remove("shake"); void fs.offsetWidth; fs.classList.add("shake");
+    fs.setAttribute("aria-invalid", "true");
     $(`#szh-${id}`).textContent = "Escolha um tamanho (ou “Não sei meu tamanho”) para adicionar à sacola.";
-    fs.querySelector("input")?.focus();
+    fs.querySelector("input")?.focus({preventScroll: true});
   }
   return true;
 }
@@ -235,7 +260,7 @@ const PAGE = 24;
 const shownMem = new Map();
 function gridBlock(list, key) {
   const shown = Math.min(list.length, shownMem.get(key) || PAGE);
-  return `<div class="grid" id="grid">${list.slice(0, shown).map(card).join("")}</div>${moreBlock(list.length, shown)}`;
+  return `<div class="grid" id="grid">${list.slice(0, shown).map((p, i) => card(p, i)).join("")}</div>${moreBlock(list.length, shown)}`;
 }
 function moreBlock(total, shown) {
   if (!total) return "";
@@ -252,7 +277,7 @@ function parseRoute() {
   const h = location.hash.replace(/^#\/?/, "");
   const [path, qs] = h.split("?");
   return {
-    parts: path.split("/").filter(Boolean).map(decodeURIComponent),
+    parts: path.split("/").filter(Boolean).map(x => { try { return decodeURIComponent(x); } catch { return x; } }),
     q: Object.fromEntries(new URLSearchParams(qs || "")),
     path
   };
@@ -307,7 +332,7 @@ function spotBody(slug) {
       <div><h3 class="spot-name">${esc(b.name)}</h3><p class="spot-d">${esc(b.d || "")}</p></div>
       <a class="link-arrow" href="#/marca/${b.s}">Ver as ${plural(b.n, "peça", "peças")} ${ICON.arrowR}</a>
     </div>
-    ${rail("rail-spot", list.map((p, i) => card(p, i)).join(""), "rail-cards")}`;
+    ${rail("rail-spot", list.map((p, i) => card(p, i)).join(""), "rail-cards", `Peças ${b.name}`)}`;
 }
 function heroFeature() {
   const list = refs(HERO_FEATURE);
@@ -316,12 +341,12 @@ function heroFeature() {
     <span class="hf-label">Peça em destaque</span>
     <div class="hf-stage" data-tilt>
       ${list.map((p, i) => `<a class="hf-card${i === 0 ? " on" : ""}" href="#/p/${esc(p.r)}" data-hf="${i}" ${i ? 'tabindex="-1" aria-hidden="true"' : ""}>
-        <span class="hf-img"><img src="${esc(p.img[0])}" alt="${esc(p.n + " — " + p.b)}" ${i ? 'loading="lazy"' : ""}></span>
+        <span class="hf-img"><img src="${esc(p.img[0])}" alt="" ${i ? 'loading="lazy"' : ""}></span>
         <span class="hf-meta"><small>${esc(p.b)}</small><b>${esc(p.n)}</b></span>
       </a>`).join("")}
       <span class="hf-glare" aria-hidden="true"></span>
     </div>
-    <div class="hf-dots" role="tablist" aria-label="Escolher peça em destaque">${list.map((p, i) => `<button role="tab" data-hfdot="${i}" aria-selected="${i === 0}" aria-label="${esc(p.n)}"></button>`).join("")}</div>
+    <div class="hf-dots" role="group" aria-label="Escolher peça em destaque">${list.map((p, i) => `<button data-hfdot="${i}" aria-pressed="${i === 0}" aria-label="${esc(p.n)}"></button>`).join("")}</div>
   </aside>`;
 }
 function homeView() {
@@ -354,19 +379,19 @@ function homeView() {
     <div><span class="eyebrow">${nb} grifes</span><h2 class="sec-title" id="bsT" data-split>Nossas marcas</h2></div>
     <div class="sec-tools"><a class="link-arrow" href="#/marcas">Ver todas ${ICON.arrowR}</a>${railBtns("rail-brands")}</div>
   </div>
-  ${rail("rail-brands", BRANDS.map(b => circle(b, `<span class="bcount">${plural(b.n, "peça", "peças")}</span>`)).join(""), "rail-brands")}
+  ${rail("rail-brands", BRANDS.map(b => circle(b, `<span class="bcount">${plural(b.n, "peça", "peças")}</span>`)).join(""), "rail-brands", "Marcas")}
 </section>
 
 <section class="section nc" aria-labelledby="ncT">
   <div class="wrap sec-head">
-    <div><span class="eyebrow">New collection</span><h2 class="display" id="ncT" data-split>Peças que definem <em>o estilo L&amp;T</em></h2></div>
+    <div><span class="eyebrow"><span lang="en">New collection</span></span><h2 class="display" id="ncT" data-split>Peças que definem <em>o estilo L&amp;T</em></h2></div>
     ${railBtns("rail-nc")}
   </div>
   ${rail("rail-nc", nc.map((p, i) => `<a class="nc-card" href="#/p/${esc(p.r)}" data-reveal style="--i:${i % 4}">
-      <span class="nc-img"><img loading="lazy" src="${esc(p.img[0])}" alt="${esc(p.n + " — " + p.b)}"></span>
+      <span class="nc-img"><img loading="lazy" src="${esc(p.img[0])}" alt=""></span>
       <span class="nc-n">${String(i + 1).padStart(2, "0")}</span>
       <span class="nc-meta"><small>${esc(p.b)}</small><b>${esc(p.n)}</b></span>
-    </a>`).join(""), "rail-nc")}
+    </a>`).join(""), "rail-nc", "Novidades")}
   <div class="wrap"><div class="rail-progress" data-progress="rail-nc"><span></span></div></div>
 </section>
 
@@ -387,9 +412,9 @@ function homeView() {
 
 <section class="section curated" aria-labelledby="cuT">
   <div class="wrap">
-    <div class="sec-head center"><div><span class="eyebrow">Curated selection · ${plural(total, "peça", "peças")}</span><h2 class="display" id="cuT" data-split>Seleção <em>da casa</em></h2></div></div>
-    <div class="tabs" role="tablist" aria-label="Categorias em destaque">
-      ${FEAT.map(f => `<button role="tab" class="tab" data-feat="${f.k}" aria-selected="${f.k === featState}">${esc(f.t)}</button>`).join("")}
+    <div class="sec-head center"><div><span class="eyebrow"><span lang="en">Curated selection</span> · ${plural(total, "peça", "peças")}</span><h2 class="display" id="cuT" data-split>Seleção <em>da casa</em></h2></div></div>
+    <div class="tabs" role="group" aria-label="Categorias em destaque">
+      ${FEAT.map(f => `<button class="tab" data-feat="${f.k}" aria-pressed="${f.k === featState}">${esc(f.t)}</button>`).join("")}
     </div>
     <div id="featBody">${featGrid(featState)}</div>
   </div>
@@ -398,13 +423,13 @@ function homeView() {
 ${looks.length ? `<section class="section signature" aria-labelledby="sgT">
   <div class="wrap sig-grid">
     <div class="sig-intro" data-reveal>
-      <span class="eyebrow">Signature style</span>
+      <span class="eyebrow"><span lang="en">Signature style</span></span>
       <h2 class="display" id="sgT" data-split>Looks <em>completos</em></h2>
       <p>Conjuntos pensados para usar juntos — da camisa com bermuda ao moletom com calça. Escolha o look e peça o seu tamanho.</p>
       <a class="link-arrow" href="#/loja/vestuario?tipo=conjuntos">Ver todos os conjuntos ${ICON.arrowR}</a>
     </div>
     ${looks.map((l, i) => `<a class="look look-${i + 1}" href="#/p/${esc(l.p.r)}" data-reveal="mask">
-      <span class="look-img" data-parallax="${i === 0 ? 0.06 : 0.1}"><img loading="lazy" src="${esc(l.p.img[0])}" alt="${esc(l.p.n + " — " + l.p.b)}"></span>
+      <span class="look-img" data-parallax="${i === 0 ? 0.06 : 0.1}"><img loading="lazy" src="${esc(l.p.img[0])}" alt=""></span>
       <span class="look-cap"><small>Look ${String(i + 1).padStart(2, "0")} · ${esc(l.p.b)}</small><b>${esc(l.t)}</b><span>${esc(l.p.n)} ${ICON.arrowR}</span></span>
     </a>`).join("")}
   </div>
@@ -412,22 +437,22 @@ ${looks.length ? `<section class="section signature" aria-labelledby="sgT">
 
 ${ex.length ? `<section class="drops" aria-labelledby="exT">
   <div class="wrap">
-    <div class="sec-head"><div><span class="eyebrow eyebrow-light">Exclusive drops</span><h2 class="display light" id="exT" data-split>Colaborações e <em>linhas especiais</em></h2>
+    <div class="sec-head"><div><span class="eyebrow eyebrow-light"><span lang="en">Exclusive drops</span></span><h2 class="display light" id="exT" data-split>Colaborações e <em>linhas especiais</em></h2>
       <p class="drops-lead">LOEWE x On, Moncler Genius, Moncler FRGMT, Dior and Hylton Nel e Moncler Grenoble — peças de coleções especiais das grifes.</p></div>
-      <a class="link-arrow light" href="#/exclusivos">Ver os exclusivos ${ICON.arrowR}</a></div>
+      <div class="sec-tools"><a class="link-arrow light" href="#/exclusivos">Ver os exclusivos ${ICON.arrowR}</a>${railBtns("rail-ex")}</div></div>
     ${rail("rail-ex", ex.map((p, i) => `<a class="ex-card" href="#/p/${esc(p.r)}" data-reveal style="--i:${i % 4}" data-tilt>
-        <span class="ex-img"><img loading="lazy" src="${esc(p.img[0])}" alt="${esc(p.n + " — " + p.b)}"></span>
+        <span class="ex-img"><img loading="lazy" src="${esc(p.img[0])}" alt=""></span>
         <span class="ex-meta"><span class="tag tag-x">${esc(p.x)}</span><b>${esc(p.n)}</b><small>${esc(p.b)}</small></span>
         <span class="hf-glare" aria-hidden="true"></span>
-      </a>`).join(""), "rail-ex")}
+      </a>`).join(""), "rail-ex", "Peças exclusivas")}
   </div>
 </section>` : ""}
 
 <section class="section" aria-labelledby="spT">
   <div class="wrap">
     <div class="sec-head"><div><span class="eyebrow">Marca em destaque</span><h2 class="display" id="spT" data-split>Explore <em>por grife</em></h2></div>${railBtns("rail-spot")}</div>
-    <div class="tabs tabs-left" role="tablist" aria-label="Marca em destaque">
-      ${SPOT.map(s => `<button role="tab" class="tab" data-spot="${s}" aria-selected="${s === spotState}">${esc(BRAND.get(s).name)}</button>`).join("")}
+    <div class="tabs tabs-left" role="group" aria-label="Marca em destaque">
+      ${SPOT.map(s => `<button class="tab" data-spot="${s}" aria-pressed="${s === spotState}">${esc(BRAND.get(s).name)}</button>`).join("")}
     </div>
     <div id="spotBody">${spotBody(spotState)}</div>
   </div>
@@ -441,7 +466,7 @@ function experience() {
   return `<section class="experience" aria-labelledby="xpT">
   <div class="wrap xp-grid">
     <div class="xp-intro" data-reveal>
-      <span class="eyebrow eyebrow-light">The L&amp;T experience</span>
+      <span class="eyebrow eyebrow-light"><span lang="en">The L&amp;T experience</span></span>
       <h2 class="display light" id="xpT" data-split>Uma boutique de grifes, <em>com atendimento de pessoa para pessoa.</em></h2>
       <p>Cada peça é escolhida a dedo. Você monta a sacola no site e finaliza com a gente pelo WhatsApp — confirmamos tamanho, cor, disponibilidade e valores antes de fechar.</p>
       <a class="btn btn-silver" href="${wa("Olá! Vim pelo site da " + NOME + " e queria ajuda para escolher uma peça.")}" target="_blank" rel="noopener">${ICON.chat} Falar com a gente</a>
@@ -516,14 +541,14 @@ function shopView(r) {
   <div class="shop" id="shop">
     <aside class="filters" id="filters" aria-label="Filtros">
       <div class="filters-head"><b>Filtrar</b><button class="icon-btn" data-filters="close" aria-label="Fechar filtros">${ICON.close}</button></div>
-      <div class="facet"><h3>Seção</h3>${secOpts.join("")}</div>
-      ${types.length > 1 ? `<div class="facet"><h3>Tipo de peça</h3>${typeOpts.join("")}</div>` : ""}
-      <div class="facet"><h3>Marca</h3>${brandOpts.join("")}</div>
+      <div class="facet"><h2>Seção</h2>${secOpts.join("")}</div>
+      ${types.length > 1 ? `<div class="facet"><h2>Tipo de peça</h2>${typeOpts.join("")}</div>` : ""}
+      <div class="facet"><h2>Marca</h2>${brandOpts.join("")}</div>
     </aside>
     <div class="shop-main" id="shopMain">
       <div class="toolbar">
-        <button class="btn-filter" data-filters="open">${ICON.filter} Filtrar</button>
-        <span class="count">${plural(list.length, "peça", "peças")}</span>
+        <button class="btn-filter" data-filters="open" aria-controls="filters" aria-expanded="false">${ICON.filter} Filtrar</button>
+        <span class="count" tabindex="-1">${plural(list.length, "peça", "peças")}</span>
         <label class="sort">Ordenar
           <select id="sortSel" data-path="${esc(path)}" data-q="${esc(JSON.stringify({tipo, marca}))}">
             <option value="">Destaques</option>
@@ -590,7 +615,7 @@ function brandView(r) {
 </div>
 <section class="section section-tint" aria-labelledby="obT">
   <div class="wrap sec-head"><div><span class="eyebrow">Continue explorando</span><h2 class="sec-title" id="obT">Outras marcas</h2></div>${railBtns("rail-brands")}</div>
-  ${rail("rail-brands", others.map(x => circle(x, `<span class="bcount">${esc(x.name)}</span>`)).join(""), "rail-brands")}
+  ${rail("rail-brands", others.map(x => circle(x, `<span class="bcount">${esc(x.name)}</span>`)).join(""), "rail-brands", "Outras marcas")}
 </section>`
   };
 }
@@ -664,7 +689,7 @@ function productView(r) {
   <article class="pdp">
     <div class="gallery">
       <div class="g-main" id="gMainWrap">
-        <img id="gMain" src="${esc(p.img[0])}" alt="${esc(p.n + " — " + p.b)}">
+        <img id="gMain" src="${esc(p.img[0])}" alt="${esc(p.n + " — " + p.b)}" fetchpriority="high">
         ${multi ? `<button class="g-nav prev" data-g="-1" aria-label="Foto anterior">${ICON.arrowL}</button>
         <button class="g-nav next" data-g="1" aria-label="Próxima foto">${ICON.arrowR}</button>
         <span class="g-count" id="gCount">1 / ${p.img.length}</span>` : ""}
@@ -689,13 +714,13 @@ function productView(r) {
   </article>
 </div>
 <div class="buybar" id="buybar">
-  <span class="bb-name"><small>${esc(p.b)}</small>${esc(p.n)}</span>
+  <span class="bb-name"><small>${esc(p.b)}</small><span class="bb-n">${esc(p.n)}</span></span>
   <button class="btn btn-add" data-add="${esc(p.r)}" data-from="pdp">${ICON.bag} Adicionar</button>
 </div>
 ${related.length ? `<section class="section section-tint" aria-labelledby="rlT">
   <div class="wrap">
     <div class="sec-head"><div><span class="eyebrow">Combina com você</span><h2 class="display" id="rlT">Você também <em>pode gostar</em></h2></div>${railBtns("rail-rel")}</div>
-    ${rail("rail-rel", related.map((x, i) => card(x, i)).join(""), "rail-cards")}
+    ${rail("rail-rel", related.map((x, i) => card(x, i)).join(""), "rail-cards", "Peças relacionadas")}
   </div>
 </section>` : ""}`,
     after() {
@@ -718,7 +743,24 @@ ${related.length ? `<section class="section section-tint" aria-labelledby="rlT">
         wrap.addEventListener("pointerenter", () => wrap.classList.add("zooming"));
         wrap.addEventListener("pointerleave", () => wrap.classList.remove("zooming"));
       }
-      wrap.addEventListener("click", e => { if (!e.target.closest("button:not([data-zoom])")) openZoom(p.img[i], p.n); });
+      /* arrastar a foto para o lado no celular troca a foto */
+      let sx = null, swiped = false;
+      wrap.addEventListener("pointerdown", e => { if (e.pointerType === "touch") { sx = e.clientX; swiped = false; } });
+      wrap.addEventListener("pointerup", e => {
+        if (sx === null) return;
+        const dx = e.clientX - sx; sx = null;
+        if (p.img.length > 1 && Math.abs(dx) > 40) { swiped = true; show(i + (dx < 0 ? 1 : -1)); }
+      });
+      wrap.addEventListener("pointercancel", () => { sx = null; });
+      wrap.addEventListener("click", e => {
+        if (swiped) { swiped = false; return; }
+        if (!e.target.closest("button:not([data-zoom])")) openZoom(p.img[i], p.n);
+      });
+      if (pendingGuide) {
+        pendingGuide = false;
+        const g = $("#guideAcc");
+        if (g) { g.open = true; requestAnimationFrame(() => { g.scrollIntoView({block: "center"}); $("summary", g).focus({preventScroll: true}); }); }
+      }
       /* barra fixa de compra no celular quando o botão principal sai da tela */
       const bar = $("#buybar"), target = $("#pdpActions");
       if (bar && target && "IntersectionObserver" in window) {
@@ -747,8 +789,10 @@ function searchView(r) {
   </header>
   ${brandHits.length ? `<div class="chips chips-brands">${brandHits.map(b => `<a class="chip" href="#/marca/${b.s}">${esc(b.name)} <span>${b.n}</span></a>`).join("")}</div>` : ""}
   <div id="shopMain">
-    <p class="count">${plural(list.length, "peça encontrada", "peças encontradas")}</p>
-    ${list.length ? gridBlock(list, location.hash) : `<div class="empty"><p>Não encontramos peças com essa busca. Tente o nome da marca, do modelo ou o tipo de peça — ou peça pelo WhatsApp.</p><a class="btn btn-outline" href="#/loja">Ver todas as peças</a></div>`}
+    ${!q ? `<p class="sr-label">Marcas populares</p><div class="chips chips-brands">${BRANDS.slice(0, 10).map(b => `<a class="chip" href="#/marca/${b.s}">${esc(b.name)} <span>${b.n}</span></a>`).join("")}</div>
+      <p class="sr-label">Atalhos</p><div class="chips"><a class="chip" href="#/exclusivos">Exclusivos</a><a class="chip" href="#/loja/vestuario?tipo=jaquetas">Jaquetas</a><a class="chip" href="#/loja/vestuario?tipo=camisetas-polos">Camisetas e polos</a><a class="chip" href="#/loja/acessorios">Acessórios</a></div>`
+    : `<p class="count" tabindex="-1">${plural(list.length, "peça encontrada", "peças encontradas")}</p>
+    ${list.length ? gridBlock(list, location.hash) : `<div class="empty"><p>Não encontramos peças com essa busca. Tente o nome da marca, do modelo ou o tipo de peça — ou peça pelo WhatsApp.</p><a class="btn btn-outline" href="#/loja">Ver todas as peças</a></div>`}`}
   </div>
 </div>`
   };
@@ -767,7 +811,7 @@ function favsView() {
     <p>${list.length ? `${plural(list.length, "peça salva", "peças salvas")} neste aparelho.` : "Toque no coração das peças para guardar aqui as que você gostou."}</p>
   </header>
   <div id="shopMain">
-    ${list.length ? `<div class="grid" id="grid">${list.map(card).join("")}</div>
+    ${list.length ? `<div class="grid" id="grid">${list.map((p, i) => card(p, i)).join("")}</div>
       <div class="center-cta"><button class="btn" data-favs-to-bag>${ICON.bag} Pedir os favoritos pelo WhatsApp</button></div>`
     : `<div class="empty"><p>Você ainda não salvou nenhuma peça.</p><a class="btn btn-outline" href="#/loja">Ver novidades</a></div>`}
   </div>
@@ -786,14 +830,14 @@ function exclusivesView() {
   <div class="wrap">
     ${crumbs([["Início", "#/"], ["Exclusivos"]])}
     <header class="page-head">
-      <span class="eyebrow eyebrow-light">Exclusive drops</span>
+      <span class="eyebrow eyebrow-light"><span lang="en">Exclusive drops</span></span>
       <h1 class="light" data-split>Colaborações e <em>linhas especiais</em></h1>
       <p>${esc(groups.join(" · "))}</p>
     </header>
   </div>
 </section>
 <div class="wrap" id="shopMain">
-  <div class="grid grid-ex" id="grid">${list.map(card).join("")}</div>
+  <div class="grid grid-ex" id="grid">${list.map((p, i) => card(p, i)).join("")}</div>
 </div>
 ${ctaBand()}`
   };
@@ -896,11 +940,12 @@ function initMotion(root) {
       if (!en.isIntersecting) return;
       countIO.unobserve(en.target);
       const el = en.target, to = +el.dataset.count, t0 = performance.now(), dur = 1400;
+      el.textContent = "0";
       const step = t => { const k = Math.min(1, (t - t0) / dur); el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))).toLocaleString("pt-BR"); if (k < 1) requestAnimationFrame(step); };
       requestAnimationFrame(step);
     }), {threshold: .4});
   }
-  $$("[data-count]", root).forEach(el => { el.textContent = "0"; countIO.observe(el); });
+  $$("[data-count]", root).forEach(el => countIO.observe(el));
 }
 /* inclinação 3D com reflexo de luz */
 function initTilt(root) {
@@ -942,18 +987,20 @@ function initHero() {
   }
   /* alterna a peça em destaque */
   const cards = $$(".hf-card", hero), dots = $$("[data-hfdot]", hero);
-  if (cards.length > 1) {
-    let cur = 0;
-    const go = j => {
+  if (cards.length > 1 && feat) {
+    let cur = 0, paused = false, stopped = false;
+    const show = j => {
       cards[cur].classList.remove("on"); cards[cur].setAttribute("tabindex", "-1"); cards[cur].setAttribute("aria-hidden", "true");
       cur = (j + cards.length) % cards.length;
       cards[cur].classList.add("on"); cards[cur].removeAttribute("tabindex"); cards[cur].removeAttribute("aria-hidden");
-      dots.forEach((d, i) => d.setAttribute("aria-selected", i === cur));
+      dots.forEach((d, i) => d.setAttribute("aria-pressed", i === cur));
     };
-    dots.forEach((d, i) => d.addEventListener("click", () => { go(i); restart(); }));
-    let timer = 0;
-    const restart = () => { clearInterval(timer); if (!reduceMotion.matches) timer = setInterval(() => { if (!document.hidden) go(cur + 1); }, 5200); };
-    restart();
+    dots.forEach((d, i) => d.addEventListener("click", () => { stopped = true; show(i); }));
+    feat.addEventListener("pointerenter", () => { paused = true; });
+    feat.addEventListener("pointerleave", () => { paused = false; });
+    feat.addEventListener("focusin", () => { paused = true; });
+    feat.addEventListener("focusout", () => { paused = false; });
+    const timer = reduceMotion.matches ? 0 : setInterval(() => { if (!document.hidden && !paused && !stopped) show(cur + 1); }, 5200);
     cleanups.push(() => clearInterval(timer));
   }
 }
@@ -968,7 +1015,8 @@ function initParallax(root) {
     els.forEach(el => {
       const r = el.parentElement.getBoundingClientRect();
       if (r.bottom < 0 || r.top > innerHeight) return;
-      const k = (r.top + r.height / 2 - innerHeight / 2) * +el.dataset.parallax;
+      const max = Math.max(0, (el.offsetHeight * 1.12 - r.height) / 2 - 2);
+      const k = Math.max(-max, Math.min(max, (r.top + r.height / 2 - innerHeight / 2) * +el.dataset.parallax));
       el.style.transform = `translate3d(0, ${k}px, 0) scale(1.12)`;
     });
   };
@@ -1011,9 +1059,12 @@ addEventListener("resize", () => initRails());
 
 /* troca de foto com transição suave */
 function swapImg(img, src) {
-  if (img.getAttribute("src") === src) return;
+  if ((img._to ?? img.getAttribute("src")) === src) return;
+  img._to = src;
   if (reduceMotion.matches || !img.animate) { img.src = src; return; }
+  img.getAnimations().forEach(a => a.cancel());
   img.animate([{opacity: 1}, {opacity: 0}], {duration: 160, easing: "ease-out"}).onfinish = () => {
+    if (img._to !== src) return;
     img.src = src; img.animate([{opacity: 0, transform: "scale(1.02)"}, {opacity: 1, transform: "scale(1)"}], {duration: 380, easing: EASE});
   };
 }
@@ -1022,15 +1073,18 @@ function swapImg(img, src) {
 const app = $("#app");
 const header = $("#siteHeader");
 const scrollMem = new Map();
-let intent = null, lastBodyClass = "";
+let intent = null, lastBodyClass = "", pendingGuide = false;
 
 function render(keepScroll) {
+  const act = document.activeElement;
+  const activeId = act && act !== app && app.contains(act) ? act.id : "";
   cleanups.splice(0).forEach(fn => fn());
   const r = parseRoute();
   const v = resolve(r);
+  closeOverlays();
   app.innerHTML = v.html;
   document.title = v.title ? `${v.title} · ${NOME}` : `${NOME} · Grifes selecionadas`;
-  $$("[data-nav]").forEach(a => a.toggleAttribute("aria-current", a.dataset.nav === v.nav));
+  $$("[data-nav]").forEach(a => a.dataset.nav === v.nav ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   if (lastBodyClass) document.body.classList.remove(lastBodyClass);
   lastBodyClass = v.bodyClass || "";
   if (lastBodyClass) document.body.classList.add(lastBodyClass);
@@ -1038,8 +1092,8 @@ function render(keepScroll) {
   document.body.classList.toggle("is-home", !!v.home);
   if (v.after) v.after();
   initRails(); initMotion(app); initTilt(app); initHero(); initParallax(app);
-  closeSearch(); closeDrawer(); closeBag(true);
   document.documentElement.classList.remove("lock");
+  setInert(false);
 
   if (!keepScroll) {
     const shop = $("#shopMain");
@@ -1052,83 +1106,132 @@ function render(keepScroll) {
       scrollTo(0, scrollMem.get(location.hash) || 0);
     }
   }
-  if (intent && intent !== "keep") app.focus({preventScroll: true});
+  if (intent === "keep") {
+    const el = (activeId && document.getElementById(activeId)) || $("#shopMain .count");
+    if (el) el.focus({preventScroll: true});
+  } else if (intent) app.focus({preventScroll: true});
   if (intent && intent !== "keep" && !reduceMotion.matches && app.animate) {
     app.animate([{opacity: 0, transform: "translateY(14px)"}, {opacity: 1, transform: "none"}], {duration: 520, easing: EASE});
   }
   intent = null;
   onScrollHeader();
+  document.documentElement.classList.add("ready");
 }
 const headerH = () => header.offsetHeight;
 function onScrollHeader() {
-  header.classList.toggle("solid", !header.classList.contains("overlay") || scrollY > 40 || !$("#search").hidden);
+  const ov = header.classList.contains("overlay"), scrolled = scrollY > 40;
+  header.classList.toggle("docked", !ov || scrolled);
+  header.classList.toggle("solid", !ov || scrolled || !$("#search").hidden);
 }
 addEventListener("scroll", () => { scrollMem.set(location.hash, scrollY); onScrollHeader(); }, {passive: true});
 addEventListener("hashchange", () => render());
 if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
-function go(h, keep) { intent = keep ? "keep" : "link"; if (location.hash === h) render(); else location.hash = h; }
+/* Janelas (sacola, menu, filtros, visualização rápida, zoom) ganham uma entrada no histórico:
+   o botão Voltar do celular fecha a janela em vez de trocar a página por baixo. */
+const isModalState = () => !!(history.state && history.state.ltModal);
+const modalHist = {
+  push() { if (!isModalState()) history.pushState({ltModal: 1}, "", location.href); },
+  pop() { if (isModalState()) history.back(); }
+};
+addEventListener("popstate", () => { if (!isModalState()) closeOverlays(); });
+function closeOverlays() {
+  closeSearch(true); closeDrawer(true); closeBag(true); closeFilters();
+  if (qv.open) { qvSilent = true; qv.close(); }
+  if (zoomer.open) { zoomSilent = true; zoomer.close(); }
+}
+/* fundo inerte enquanto a sacola ou o menu estão abertos */
+function setInert(on) {
+  [app, header, $(".site-footer"), $(".announce"), $("#waFloat"), $("#toast")].forEach(el => { if (el) el.inert = on; });
+}
+
+function go(h, keep) {
+  intent = keep ? "keep" : "link";
+  if (isModalState()) { history.replaceState(null, "", h); render(); return; }
+  if (location.hash === h) render(); else location.hash = h;
+}
 
 /* ---------- sacola ---------- */
 const bagEl = $("#bag"), bagBtn = $("#bagBtn");
-let bagReturn = null;
-function renderBag() {
+let bagReturn = null, bagHideT = 0;
+const bagKey = it => `${it.r}|${it.s}`;
+function renderBag(focus) {
   const body = $("#bagBody"), foot = $("#bagFoot");
   $("#bagTitle").textContent = bag.length ? `Sua sacola (${bagQty()})` : "Sua sacola";
   if (!bag.length) {
     body.innerHTML = `<div class="bag-empty">${ICON.bag}<p>Sua sacola está vazia.</p><a class="btn btn-outline" href="#/loja">Ver novidades</a></div>`;
     foot.innerHTML = "";
-    return;
-  }
-  body.innerHTML = `<ul class="bag-list">${bag.map((it, i) => {
-    const p = BY_REF.get(it.r);
-    return `<li class="bag-item">
-      <a class="bi-img" href="#/p/${esc(p.r)}"><img src="${esc(p.img[0])}" alt=""></a>
-      <div class="bi-info">
-        <small>${esc(p.b)}</small>
-        <a href="#/p/${esc(p.r)}" class="bi-name">${esc(p.n)}</a>
-        <span class="bi-meta">Ref. ${esc(p.r)}${it.s ? ` · Tamanho ${esc(it.s)}` : ""}</span>
-        <div class="bi-row">
-          <span class="qty" role="group" aria-label="Quantidade">
-            <button data-q="${i}" data-d="-1" aria-label="Diminuir">${ICON.minus}</button><b>${it.q}</b><button data-q="${i}" data-d="1" aria-label="Aumentar">${ICON.plus}</button>
-          </span>
-          <button class="link-btn" data-rm="${i}">Remover</button>
+  } else {
+    body.innerHTML = `<ul class="bag-list">${bag.map(it => {
+      const p = BY_REF.get(it.r), k = esc(bagKey(it));
+      return `<li class="bag-item">
+        <a class="bi-img" href="#/p/${esc(p.r)}" tabindex="-1" aria-hidden="true"><img src="${esc(p.img[0])}" alt=""></a>
+        <div class="bi-info">
+          <small>${esc(p.b)}</small>
+          <a href="#/p/${esc(p.r)}" class="bi-name">${esc(p.n)}</a>
+          <span class="bi-meta">Ref. ${esc(p.r)}${it.s ? ` · Tamanho ${esc(it.s)}` : ""}</span>
+          <div class="bi-row">
+            <span class="qty" role="group" aria-label="Quantidade de ${esc(p.n)}">
+              <button data-q="${k}" data-d="-1" aria-label="Diminuir">${ICON.minus}</button><b aria-live="polite">${+it.q}</b><button data-q="${k}" data-d="1" aria-label="Aumentar">${ICON.plus}</button>
+            </span>
+            <button class="link-btn" data-rm="${k}" aria-label="Remover ${esc(p.n)}">Remover</button>
+          </div>
         </div>
-      </div>
-    </li>`;
-  }).join("")}</ul>`;
-  foot.innerHTML = `<p class="bag-note">Valores, cores e disponibilidade são confirmados pelo WhatsApp antes de fechar o pedido.</p>
-    <a class="btn btn-block" href="${wa(bagMessage())}" target="_blank" rel="noopener">${ICON.chat} Finalizar pelo WhatsApp</a>
-    <button class="btn btn-outline btn-block" id="bagContinue">Continuar comprando</button>`;
+      </li>`;
+    }).join("")}</ul>`;
+    foot.innerHTML = `<p class="bag-note">Valores, cores e disponibilidade são confirmados pelo WhatsApp antes de fechar o pedido.</p>
+      <a class="btn btn-block" href="${wa(bagMessage())}" target="_blank" rel="noopener">${ICON.chat} Finalizar pelo WhatsApp</a>
+      <button class="btn btn-outline btn-block" id="bagContinue">Continuar comprando</button>`;
+  }
+  if (typeof focus === "function") { const el = focus(); if (el) el.focus({preventScroll: true}); }
 }
 function openBag() {
-  renderBag();
+  if (bagEl.classList.contains("open")) return;
+  loadState(); renderBag(); hideToast();
+  clearTimeout(bagHideT);
   bagReturn = document.activeElement;
-  bagEl.hidden = false;
-  requestAnimationFrame(() => bagEl.classList.add("open"));
+  bagEl.hidden = false; void bagEl.offsetWidth; bagEl.classList.add("open");
   bagBtn.setAttribute("aria-expanded", "true");
   document.documentElement.classList.add("lock");
-  setTimeout(() => $("#bagClose").focus(), 50);
+  setInert(true);
+  modalHist.push();
+  setTimeout(() => $("#bagClose").focus({preventScroll: true}), 60);
 }
 function closeBag(silent) {
-  if (bagEl.hidden) return;
+  if (!bagEl.classList.contains("open")) return;
   bagEl.classList.remove("open"); bagBtn.setAttribute("aria-expanded", "false");
   document.documentElement.classList.remove("lock");
-  setTimeout(() => { bagEl.hidden = true; }, silent ? 0 : 320);
-  if (!silent && bagReturn && document.contains(bagReturn)) bagReturn.focus();
+  setInert(false);
+  clearTimeout(bagHideT);
+  bagHideT = setTimeout(() => { if (!bagEl.classList.contains("open")) bagEl.hidden = true; }, silent ? 0 : 450);
+  if (!silent) {
+    modalHist.pop();
+    if (bagReturn && document.contains(bagReturn)) bagReturn.focus({preventScroll: true});
+  }
+}
+function changeQty(key, d) {
+  loadState();
+  const i = bag.findIndex(it => bagKey(it) === key);
+  if (i < 0) { renderBag(); return; }
+  const q = d === 0 ? 0 : bag[i].q + d;
+  if (q <= 0) bag.splice(i, 1); else bag[i].q = Math.min(9, q);
+  store.set("lt-bag", bag); updateCounts();
+  if (q > 0) renderBag(() => $(`[data-q="${CSS.escape(key)}"][data-d="${d}"]`, bagEl));
+  else renderBag(() => { const rms = $$("[data-rm]", bagEl); return rms[i] || rms[i - 1] || $("#bagClose"); });
 }
 bagBtn.addEventListener("click", openBag);
 $("#bagClose").addEventListener("click", () => closeBag());
 bagEl.addEventListener("click", e => {
   if (e.target === bagEl) return closeBag();
-  const q = e.target.closest("[data-q]"); if (q) return setQty(+q.dataset.q, bag[+q.dataset.q].q + +q.dataset.d);
-  const rm = e.target.closest("[data-rm]"); if (rm) return setQty(+rm.dataset.rm, 0);
+  const q = e.target.closest("[data-q]"); if (q) return changeQty(q.dataset.q, +q.dataset.d);
+  const rm = e.target.closest("[data-rm]"); if (rm) return changeQty(rm.dataset.rm, 0);
   if (e.target.closest("#bagContinue")) return closeBag();
 });
 function flyToBag(fromEl, p) {
   if (reduceMotion.matches || !fromEl || !document.body.animate) { bump(); return; }
   const src = fromEl.closest(".card, .pdp, .qv-body, #buybar")?.querySelector("img") || null;
   const a = (src || fromEl).getBoundingClientRect(), b = bagBtn.getBoundingClientRect();
+  if (!a.width || !b.width) { bump(); return; }
   const ghost = document.createElement("img");
   ghost.src = p.img[0]; ghost.className = "fly"; ghost.alt = "";
   const s = Math.min(120, a.width);
@@ -1155,13 +1258,15 @@ function toast(msg, act) {
   el.classList.add("show");
   clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 3600);
 }
+function hideToast() { clearTimeout(toastTimer); $("#toast").classList.remove("show"); }
 $("#toast").addEventListener("click", e => {
-  if (e.target.closest("button") && toastAction?.action) { toastAction.action(); $("#toast").classList.remove("show"); }
-  if (e.target.closest("a")) $("#toast").classList.remove("show");
+  if (e.target.closest("button") && toastAction?.action) { hideToast(); toastAction.action(); }
+  if (e.target.closest("a")) hideToast();
 });
 
 /* ---------- visualização rápida ---------- */
 const qv = $("#qv");
+let qvSilent = false, qvNav = false;
 function openQV(r) {
   const p = BY_REF.get(r); if (!p) return;
   qv.innerHTML = `<div class="qv-body">
@@ -1185,26 +1290,29 @@ function openQV(r) {
     </div>
   </div>`;
   qv.showModal();
+  modalHist.push();
   if (!reduceMotion.matches && qv.animate) qv.animate([{opacity: 0, transform: "translateY(18px) scale(.98)"}, {opacity: 1, transform: "none"}], {duration: 380, easing: EASE});
 }
 qv.addEventListener("click", e => {
   if (e.target === qv || e.target.closest("[data-qvclose]")) return qv.close();
   const t = e.target.closest("[data-qvi]");
   if (t) { const p = BY_REF.get($("[data-add]", qv).dataset.add); swapImg($("#qvImg"), p.img[+t.dataset.qvi]); $$("[data-qvi]", qv).forEach(b => b.setAttribute("aria-current", b === t)); }
-  if (e.target.closest("a[href^='#/']")) qv.close();
 });
-qv.addEventListener("close", () => { qv.innerHTML = ""; });
+qv.addEventListener("close", () => { if (!qvSilent && !qvNav) modalHist.pop(); qvSilent = qvNav = false; qv.innerHTML = ""; });
 
 /* ---------- foto ampliada ---------- */
 const zoomer = $("#zoomer"), zoomImg = $("#zoomImg"), zoomStage = $("#zoomStage");
+let zoomSilent = false;
 function openZoom(src, alt) {
-  zoomImg.src = src; zoomImg.alt = alt || ""; zoomStage.classList.remove("on");
+  zoomImg.src = src; zoomImg.alt = alt || ""; zoomStage.classList.remove("on"); zoomStage.setAttribute("aria-pressed", "false");
   zoomer.showModal();
+  modalHist.push();
 }
 zoomStage.addEventListener("click", e => {
   const r = zoomImg.getBoundingClientRect();
-  zoomImg.style.transformOrigin = `${((e.clientX - r.left) / r.width) * 100}% ${((e.clientY - r.top) / r.height) * 100}%`;
+  zoomImg.style.transformOrigin = e.detail === 0 || !r.width ? "50% 50%" : `${((e.clientX - r.left) / r.width) * 100}% ${((e.clientY - r.top) / r.height) * 100}%`;
   zoomStage.classList.toggle("on");
+  zoomStage.setAttribute("aria-pressed", zoomStage.classList.contains("on"));
 });
 zoomStage.addEventListener("pointermove", e => {
   if (!zoomStage.classList.contains("on") || e.pointerType !== "mouse") return;
@@ -1213,6 +1321,7 @@ zoomStage.addEventListener("pointermove", e => {
 });
 $("#zoomClose").addEventListener("click", () => zoomer.close());
 zoomer.addEventListener("click", e => { if (e.target === zoomer) zoomer.close(); });
+zoomer.addEventListener("close", () => { if (!zoomSilent) modalHist.pop(); zoomSilent = false; });
 
 /* ---------- eventos ---------- */
 document.addEventListener("click", e => {
@@ -1224,14 +1333,15 @@ document.addEventListener("click", e => {
     if (h.startsWith("#/")) {
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
       e.preventDefault();
-      if (qv.open) qv.close();
+      if (qv.open) { qvNav = true; qv.close(); }
       go(h, !!a.dataset.keep);
       return;
     }
   }
+  if (e.target.closest(".scrim")) { toggleFilters(false); return; }
   const btn = e.target.closest("button");
   if (!btn) return;
-  if (btn.dataset.fav) { e.preventDefault(); toggleFav(btn.dataset.fav); return; }
+  if (btn.dataset.fav) { e.preventDefault(); toggleFav(btn.dataset.fav, btn); return; }
   if (btn.dataset.qv) { openQV(btn.dataset.qv); return; }
   if (btn.dataset.quick) {
     const p = BY_REF.get(btn.dataset.quick);
@@ -1244,14 +1354,19 @@ document.addEventListener("click", e => {
       if (btn.closest("#buybar")) $(`[data-sizes="${from}"]`)?.scrollIntoView({behavior: reduceMotion.matches ? "auto" : "smooth", block: "center"});
       return;
     }
-    addToBag(p.r, pickedSize(from), btn);
-    if (from === "qv") setTimeout(() => qv.close(), 250);
+    if (from === "qv") { addToBag(p.r, pickedSize(from), btn, 320); setTimeout(() => { if (qv.open) qv.close(); }, 250); }
+    else addToBag(p.r, pickedSize(from), btn);
     return;
   }
   if (btn.hasAttribute("data-guide")) {
-    const g = $("#guideAcc");
-    if (g) { g.open = true; g.scrollIntoView({behavior: reduceMotion.matches ? "auto" : "smooth", block: "center"}); }
-    else { const p = BY_REF.get($("[data-add]", qv)?.dataset.add); qv.close(); if (p) go(`#/p/${p.r}`); }
+    if (btn.closest("#qv")) {
+      const p = BY_REF.get($("[data-add]", qv)?.dataset.add);
+      qvNav = true; qv.close();
+      if (p) { pendingGuide = true; go(`#/p/${p.r}`); }
+    } else {
+      const g = $("#guideAcc");
+      if (g) { g.open = true; g.scrollIntoView({behavior: reduceMotion.matches ? "auto" : "smooth", block: "center"}); $("summary", g).focus({preventScroll: true}); }
+    }
     return;
   }
   if (btn.hasAttribute("data-favs-to-bag")) {
@@ -1267,7 +1382,7 @@ document.addEventListener("click", e => {
   }
   if (btn.dataset.feat) {
     featState = btn.dataset.feat;
-    $$("[data-feat]").forEach(t => t.setAttribute("aria-selected", t === btn));
+    $$("[data-feat]").forEach(t => t.setAttribute("aria-pressed", t === btn));
     const body = $("#featBody");
     body.innerHTML = featGrid(featState);
     initMotion(body);
@@ -1275,7 +1390,7 @@ document.addEventListener("click", e => {
   }
   if (btn.dataset.spot) {
     spotState = btn.dataset.spot;
-    $$("[data-spot]").forEach(t => t.setAttribute("aria-selected", t === btn));
+    $$("[data-spot]").forEach(t => t.setAttribute("aria-pressed", t === btn));
     const body = $("#spotBody");
     body.innerHTML = spotBody(spotState);
     initRails(); initMotion(body);
@@ -1284,10 +1399,11 @@ document.addEventListener("click", e => {
   if (btn.hasAttribute("data-more")) {
     const key = location.hash, grid = $("#grid");
     const shown = grid.children.length, next = Math.min(currentList.length, shown + PAGE);
-    grid.insertAdjacentHTML("beforeend", currentList.slice(shown, next).map(card).join(""));
+    grid.insertAdjacentHTML("beforeend", currentList.slice(shown, next).map((p, i) => card(p, i)).join(""));
     shownMem.set(key, next);
     $("#more").outerHTML = moreBlock(currentList.length, next);
     initMotion(grid);
+    grid.children[shown]?.querySelector(".card-link")?.focus({preventScroll: true});
     return;
   }
   if (btn.dataset.filters) { toggleFilters(btn.dataset.filters === "open"); return; }
@@ -1298,8 +1414,14 @@ document.addEventListener("change", e => {
     go(href(s.dataset.path, {...q, ordem: s.value}), true);
   }
   if (e.target.closest("[data-sizes]")) {
-    const fs = e.target.closest("[data-sizes]"), id = fs.dataset.sizes;
-    const h = $(`#szh-${id}`); if (h) h.textContent = e.target.value === SIZE_TBD ? "Sem problema — ajudamos a escolher o tamanho pelo WhatsApp." : `Tamanho ${e.target.value} selecionado. A disponibilidade é confirmada pelo WhatsApp.`;
+    const fs = e.target.closest("[data-sizes]"), id = fs.dataset.sizes, v = e.target.value;
+    fs.removeAttribute("aria-invalid");
+    const h = $(`#szh-${id}`); if (h) h.textContent = v === SIZE_TBD ? "Sem problema — ajudamos a escolher o tamanho pelo WhatsApp." : `Tamanho ${v} selecionado. A disponibilidade é confirmada pelo WhatsApp.`;
+    const link = $("#pdpWa");
+    if (id === "pdp" && link) {
+      const p = BY_REF.get($("#pdpActions [data-add]").dataset.add);
+      link.href = wa(`Olá! Tenho interesse na peça ${p.n} ${p.b} (Ref. ${p.r})${v === SIZE_TBD ? " — ainda não sei meu tamanho" : ` · Tamanho ${v}`}.`);
+    }
   }
 });
 document.addEventListener("submit", e => {
@@ -1310,33 +1432,74 @@ document.addEventListener("submit", e => {
   }
 });
 
+/* ---------- filtros (celular) ---------- */
 function toggleFilters(open) {
-  const f = $("#filters"), s = $(".scrim");
-  if (!f) return;
+  const f = $("#filters"), s = $(".scrim"), b = $(".btn-filter");
+  if (!f || f.classList.contains("open") === open) return;
   f.classList.toggle("open", open);
   if (s) s.hidden = !open;
   document.documentElement.classList.toggle("lock", open);
+  if (b) b.setAttribute("aria-expanded", open);
+  if (open) {
+    f.setAttribute("role", "dialog"); f.setAttribute("aria-modal", "true");
+    modalHist.push();
+    setTimeout(() => $("[data-filters='close']", f)?.focus({preventScroll: true}), 60);
+  } else {
+    f.removeAttribute("role"); f.removeAttribute("aria-modal");
+    modalHist.pop();
+    if (b) b.focus({preventScroll: true});
+  }
+}
+function closeFilters() {
+  const f = $("#filters");
+  if (!f || !f.classList.contains("open")) return;
+  f.classList.remove("open"); f.removeAttribute("role"); f.removeAttribute("aria-modal");
+  const s = $(".scrim"); if (s) s.hidden = true;
+  document.documentElement.classList.remove("lock");
 }
 
 /* ---------- menu lateral (celular) ---------- */
 const drawer = $("#drawer"), menuBtn = $("#menuBtn");
-function openDrawer() { drawer.hidden = false; requestAnimationFrame(() => drawer.classList.add("open")); menuBtn.setAttribute("aria-expanded", "true"); document.documentElement.classList.add("lock"); setTimeout(() => $("#drawerClose").focus(), 50); }
-function closeDrawer() {
-  if (drawer.hidden) return;
-  drawer.classList.remove("open"); menuBtn.setAttribute("aria-expanded", "false"); document.documentElement.classList.remove("lock");
-  setTimeout(() => { drawer.hidden = true; }, 300);
+let drawerReturn = null, drawerHideT = 0;
+function openDrawer() {
+  if (drawer.classList.contains("open")) return;
+  clearTimeout(drawerHideT);
+  drawerReturn = document.activeElement;
+  drawer.hidden = false; void drawer.offsetWidth; drawer.classList.add("open");
+  menuBtn.setAttribute("aria-expanded", "true");
+  document.documentElement.classList.add("lock");
+  setInert(true);
+  modalHist.push();
+  setTimeout(() => $("#drawerClose").focus({preventScroll: true}), 60);
+}
+function closeDrawer(silent) {
+  if (!drawer.classList.contains("open")) return;
+  drawer.classList.remove("open"); menuBtn.setAttribute("aria-expanded", "false");
+  document.documentElement.classList.remove("lock");
+  setInert(false);
+  clearTimeout(drawerHideT);
+  drawerHideT = setTimeout(() => { if (!drawer.classList.contains("open")) drawer.hidden = true; }, silent ? 0 : 450);
+  if (!silent) {
+    modalHist.pop();
+    if (drawerReturn && document.contains(drawerReturn)) drawerReturn.focus({preventScroll: true});
+  }
 }
 menuBtn.addEventListener("click", openDrawer);
-$("#drawerClose").addEventListener("click", closeDrawer);
+$("#drawerClose").addEventListener("click", () => closeDrawer());
 drawer.addEventListener("click", e => { if (e.target === drawer) closeDrawer(); });
 $("#drawerBrands").innerHTML = `<span class="eyebrow eyebrow-light">Marcas</span><div class="drawer-chips">${BRANDS.slice(0, 10).map(b => `<a href="#/marca/${b.s}">${esc(b.name)}</a>`).join("")}<a href="#/marcas">Ver todas →</a></div>`;
 
 /* ---------- busca no cabeçalho ---------- */
 const sPanel = $("#search"), sInput = $("#searchInput"), sBtn = $("#searchBtn"), sRes = $("#searchResults");
-function openSearch() { sPanel.hidden = false; sBtn.setAttribute("aria-expanded", "true"); onScrollHeader(); sInput.focus(); sInput.select(); liveSearch(); }
-function closeSearch() { if (sPanel.hidden) return; sPanel.hidden = true; sBtn.setAttribute("aria-expanded", "false"); onScrollHeader(); }
+function openSearch() { sPanel.hidden = false; sBtn.setAttribute("aria-expanded", "true"); onScrollHeader(); sInput.focus({preventScroll: true}); sInput.select(); liveSearch(); }
+function closeSearch(silent) {
+  if (sPanel.hidden) return;
+  const hadFocus = sPanel.contains(document.activeElement);
+  sPanel.hidden = true; sBtn.setAttribute("aria-expanded", "false"); onScrollHeader();
+  if (!silent && hadFocus) sBtn.focus({preventScroll: true});
+}
 sBtn.addEventListener("click", () => sPanel.hidden ? openSearch() : closeSearch());
-$("#searchClose").addEventListener("click", closeSearch);
+$("#searchClose").addEventListener("click", () => closeSearch());
 let sTimer;
 sInput.addEventListener("input", () => { clearTimeout(sTimer); sTimer = setTimeout(liveSearch, 120); });
 function liveSearch() {
@@ -1359,7 +1522,12 @@ $("#searchForm").addEventListener("submit", e => {
   if (q) go(href("busca", {q}));
 });
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape") { closeSearch(); closeDrawer(); toggleFilters(false); closeBag(); }
+  if (e.key === "Escape") {
+    if (bagEl.classList.contains("open")) closeBag();
+    else if (drawer.classList.contains("open")) closeDrawer();
+    else if ($("#filters.open")) toggleFilters(false);
+    else closeSearch();
+  }
   if (e.key === "/" && !/input|textarea|select/i.test(document.activeElement.tagName) && !qv.open) { e.preventDefault(); openSearch(); }
 });
 document.addEventListener("click", e => {
@@ -1373,7 +1541,11 @@ if (avisos.length) {
   ann.innerHTML = avisos.map((t, i) => `<span class="${i === 0 ? "on" : ""}">${esc(t)}</span>`).join("");
   let k = 0;
   if (avisos.length > 1 && !reduceMotion.matches) {
+    let hold = false;
+    ann.parentElement.addEventListener("pointerenter", () => { hold = true; });
+    ann.parentElement.addEventListener("pointerleave", () => { hold = false; });
     setInterval(() => {
+      if (hold || document.hidden) return;
       const s = ann.children;
       s[k].classList.remove("on"); k = (k + 1) % s.length; s[k].classList.add("on");
     }, 4500);
