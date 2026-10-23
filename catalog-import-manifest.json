@@ -1,0 +1,115 @@
+{
+  "input_files": 16,
+  "unique_files": 13,
+  "duplicate_files": [
+    {
+      "file": "catalogo 2-1.pdf",
+      "same_as": "catalogo 2-1 (1).pdf"
+    },
+    {
+      "file": "catalogo 3-1-1.pdf",
+      "same_as": "catalogo 3-1-1 (1).pdf"
+    },
+    {
+      "file": "catolog l_compressed-2.pdf",
+      "same_as": "catolog l_compressed-2 (1).pdf"
+    }
+  ],
+  "pages": 742,
+  "product_groups": 198,
+  "unique_photos": 739,
+  "sources": [
+    {
+      "id": "A",
+      "name": "catolog l_compressed-1 (1).pdf",
+      "pages": 72,
+      "sha256": "a4aa4ba2c717ab4be09b110ab0ec64b43c9323bc07caf6dc6a02e68cd34adaf3"
+    },
+    {
+      "id": "B",
+      "name": "catolog l_compressed-2 (1).pdf",
+      "pages": 72,
+      "sha256": "e2fe0412e62ca94c7326869c3c278a360109dacfa886543df070b074d58f70d9"
+    },
+    {
+      "id": "C",
+      "name": "catolog l_compressed-3.pdf",
+      "pages": 72,
+      "sha256": "cceee91dad5de199abb1110207e9101773855e901c18084ce84044eb4dd0102b"
+    },
+    {
+      "id": "D",
+      "name": "catolog l_compressed-4 (1).pdf",
+      "pages": 72,
+      "sha256": "9701de2cf1f7a3d35e0cb19de39570f85c0ed691803b7145934e28f921986723"
+    },
+    {
+      "id": "E",
+      "name": "catolog l_compressed-5 (1).pdf",
+      "pages": 72,
+      "sha256": "1e59962632d5858bd18f8481baebcb41925e7feb84c8b56471d8df5be1b3faa4"
+    },
+    {
+      "id": "F",
+      "name": "catolog l_compressed-6 (1).pdf",
+      "pages": 63,
+      "sha256": "edf4eb6287d79111c6f4aaea86a1a5f78233354b4285ebc5dbaa0a7f573cc6f9"
+    },
+    {
+      "id": "G",
+      "name": "catalogo 2-1.pdf",
+      "pages": 60,
+      "sha256": "cbd67fc929258e89009a211cc2fbfdb9174e15bfbbfbb3b25325a5afe753fe1b"
+    },
+    {
+      "id": "H",
+      "name": "catalogo 2-2 (1).pdf",
+      "pages": 60,
+      "sha256": "9ea086d17e7df2555f47f5de70e404f7abfb426fc63350d981ccd5836fa92bbd"
+    },
+    {
+      "id": "I",
+      "name": "catalogo 2-3 (1).pdf",
+      "pages": 49,
+      "sha256": "a273f928ce8a8cef41fb152a4e491e5800624823235f4bc649162d0d9dd525f1"
+    },
+    {
+      "id": "J",
+      "name": "catalogo 3-1-1.pdf",
+      "pages": 25,
+      "sha256": "5ed39c47f20f94a4c15e8fcca37b6304e58c8b616f99de3668a0a5fedd107da6"
+    },
+    {
+      "id": "K",
+      "name": "catalogo 3-1-2 (2).pdf",
+      "pages": 25,
+      "sha256": "42927fdde8f90c9137ecb67031b933cb00b4275cc6be3635ad9347b8cb9256ef"
+    },
+    {
+      "id": "L",
+      "name": "catalogo 3-2.pdf",
+      "pages": 50,
+      "sha256": "fc3ac555d3d98fb459beb4d43a03adbe6b686620275a47c0833a9504f87b9606"
+    },
+    {
+      "id": "M",
+      "name": "catalogo 3-3 (1).pdf",
+      "pages": 50,
+      "sha256": "cb30bde2c75cc71d2e77471dfc21e263d7ab1a866241e6de3d2124bc2166aa2c"
+    }
+  ],
+  "photo_review": {
+    "photos_in_gallery": 1031,
+    "near_duplicate_frames_removed": [
+      {
+        "removed": "o-585d3c084b4a9689.jpeg",
+        "same_as": "o-b6842c4a5eaf8828.jpeg"
+      },
+      {
+        "removed": "o-61c4d23a617080ec.jpeg",
+        "same_as": "o-bac44ded93d4c96f.jpeg"
+      }
+    ],
+    "note": "Revisão visual de todas as fotos: fotos movidas para o produto e a cor correspondentes, modelos misturados separados em grupos próprios e dois quadros repetidos retirados da galeria (os arquivos continuam em assets/originals)."
+  }
+}

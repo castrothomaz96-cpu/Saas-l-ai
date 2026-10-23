@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <meta name="description" content="L&T Club. Roupas, tênis, relógios e acessórios. Uma seleção de essenciais com presença e personalidade.">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>L&T Club — Estilo sem excessos.</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/club-sans.otf" as="font" type="font/otf" crossorigin>
+  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="editorial.css?v=5">
+</head>
+<body>
+  <a class="skip-link" href="#main">Pular para o conteúdo</a>
+  <div class="announcement"><span>IMPORTADOS · CURADORIA MASCULINA</span><span class="private-label"><i></i> THE COASTAL EDIT · SUMMER 26</span></div>
+  <header class="site-header">
+    <a class="wordmark" href="#/" aria-label="L&T Club — início"><span>L<span class="amp">&</span>T</span><small>CLUB</small></a>
+    <nav class="desktop-nav" aria-label="Navegação principal">
+      <a href="#/colecao/todos">Coleção <span class="nav-dot"></span></a><a href="#/colecao/roupas">Roupas</a><a href="#/colecao/tenis">Tênis e calçados</a><a href="#/colecao/relogios">Relógios</a><a href="#/colecao/acessorios">Acessórios</a>
+    </nav>
+    <div class="header-actions">
+      <button class="icon-button" data-action="search" aria-label="Buscar produtos" data-icon="search"></button>
+      <a class="icon-button favorite-nav" href="#/favoritos" aria-label="Ver favoritos" data-icon="heart"></a>
+      <button class="icon-button bag-button" data-action="cart" aria-label="Abrir sacola" data-icon="bag"><span class="bag-count" id="bag-count" hidden>0</span></button>
+      <button class="icon-button mobile-menu-button" data-action="menu" aria-label="Abrir menu" data-icon="menu"></button>
+    </div>
+  </header>
+  <main id="main" tabindex="-1"></main>
+  <footer class="site-footer">
+    <div class="footer-top"><a class="wordmark footer-mark" href="#/"><span>L<span class="amp">&</span>T</span><small>CLUB</small></a><p>Seu estilo.<br>Sua assinatura.</p><div class="footer-nav"><a href="#/colecao/todos">Explorar coleção ↗</a><button data-action="about">Sobre a L&T Club</button><button data-action="help">Dúvidas e informações</button></div><div class="footer-edit"><span>L&T CLUB / PRIVATE COLLECTION</span><button data-action="editor">Editar catálogo <span>↗</span></button></div></div>
+    <div class="footer-signature" aria-hidden="true">L<span>&</span>T CLUB</div><div class="footer-bottom"><span>© <span id="year"></span> L&T Club.</span><p>Ambiente privado de demonstração. Fotos dos catálogos da loja. Exemplos identificados. Preços e disponibilidade a confirmar. Nenhuma compra ou envio é realizado.</p><button data-action="privacy">Privacidade</button></div>
+  </footer>
+  <dialog id="cart-dialog" class="drawer" aria-labelledby="cart-title"></dialog>
+  <dialog id="search-dialog" class="search-dialog" aria-labelledby="search-title"><div class="dialog-heading"><h2 id="search-title">Encontre seu próximo essencial.</h2><button data-close="search-dialog" class="icon-button" aria-label="Fechar busca" data-icon="close"></button></div><form id="search-form"><div class="search-large"><span data-icon="search"></span><input id="global-search" type="search" placeholder="O que você está procurando?" aria-label="Buscar no catálogo" autocomplete="off"><button class="button dark" type="submit">Buscar ↗</button></div></form><p class="muted">Explore por produto, coleção ou cor.</p><div class="search-shortcuts"><a href="#/colecao/roupas">Roupas</a><a href="#/colecao/tenis">Tênis e calçados</a><a href="#/colecao/relogios">Relógios</a><a href="#/colecao/acessorios">Acessórios</a></div></dialog>
+  <dialog id="menu-dialog" class="drawer menu-dialog" aria-labelledby="menu-title"><div class="dialog-heading"><h2 id="menu-title">L&T Club</h2><button data-close="menu-dialog" class="icon-button" aria-label="Fechar menu" data-icon="close"></button></div><nav aria-label="Menu do celular"><a href="#/">Início <span>↗</span></a><a href="#/colecao/todos">Toda a coleção <span>↗</span></a><a href="#/colecao/roupas">Roupas <span>↗</span></a><a href="#/colecao/tenis">Tênis <span>↗</span></a><a href="#/colecao/relogios">Relógios <span>↗</span></a><a href="#/colecao/acessorios">Acessórios <span>↗</span></a><a href="#/favoritos">Seus favoritos <span>↗</span></a></nav><p class="eyebrow">ESTILO SEM EXCESSOS.</p></dialog>
+  <dialog id="info-dialog" class="info-dialog" aria-labelledby="info-title"></dialog>
+  <dialog id="editor-dialog" class="editor-dialog" aria-labelledby="editor-title"></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="app.mjs?v=5"></script>
+</body>
+</html>
