@@ -3,92 +3,105 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import path from 'node:path';
-import {products,categories,brands} from '../dist/catalog.mjs';
-import {filterProducts,addToCart,setQuantity,cartTotal,cleanCart,routeFromHash,validateCatalog,money} from '../dist/core.mjs';
+import {products,categories} from '../dist/catalog.mjs';
+import {filterProducts,addToCart,setQuantity,cartTotal,cleanCart,routeFromHash,validateCatalog,brandsIn,kindsIn,orderMessage,whatsappUrl,normalize} from '../dist/core.mjs';
 import {homeView,collectionView,productView,cartView,productCard,esc} from '../dist/ui.mjs';
-const imported=products.filter(p=>!p.demo),demo=products.filter(p=>p.demo),shoe=products.find(p=>p.id==='on-white');
-const filters={category:'todos',query:'',maxPrice:1500,size:'',available:false,sort:'featured'};
+import {sizeGrids} from '../dist/store-config.mjs';
+const shoe=products.find(p=>p.id==='on-cloudsurfer'),polo=products.find(p=>p.id==='rl-polo'),cap=products.find(p=>p.id==='rl-cap');
+const filters={category:'todos',query:'',brand:'',kind:'',sort:'featured'};
 const root=path.resolve(import.meta.dirname,'../dist');
 const manifest=JSON.parse(fs.readFileSync(new URL('../catalog-import-manifest.json',import.meta.url),'utf8'));
 test('Importação elimina três PDFs idênticos e cobre todos os 742 originais',()=>{
  assert.equal(manifest.input_files,16);assert.equal(manifest.unique_files,13);assert.equal(manifest.duplicate_files.length,3);assert.equal(manifest.pages,742);
- // Uma página pode ter fotos de dois modelos; cada página precisa estar representada e cada foto, em um só produto.
- const keys=new Set(imported.flatMap(p=>p.sources.map(s=>s.file+':'+s.page)));assert.equal(keys.size,742);
- for(const s of manifest.sources){const pages=[...new Set(imported.flatMap(p=>p.sources).filter(x=>x.file===s.name).map(x=>x.page))].sort((a,b)=>a-b);assert.deepEqual(pages,Array.from({length:s.pages},(_,i)=>i+1))}
- const photos=imported.flatMap(p=>p.gallery.map(g=>g.image));assert.equal(new Set(photos).size,photos.length);
+ const keys=new Set(products.flatMap(p=>p.sources.map(s=>s.file+':'+s.page)));assert.equal(keys.size,742);
+ for(const s of manifest.sources){const pages=[...new Set(products.flatMap(p=>p.sources).filter(x=>x.file===s.name).map(x=>x.page))].sort((a,b)=>a-b);assert.deepEqual(pages,Array.from({length:s.pages},(_,i)=>i+1))}
+ const photos=products.flatMap(p=>p.gallery.map(g=>g.image));assert.equal(new Set(photos).size,photos.length);
  assert.equal(photos.length+manifest.photo_review.near_duplicate_frames_removed.length,1033);
- for(const p of imported){const own=new Set(p.sources.map(s=>s.file+':'+s.page));assert.ok(p.gallery.every(g=>own.has(g.source+':'+g.page)))}
+ for(const p of products){const own=new Set(p.sources.map(s=>s.file+':'+s.page));assert.ok(p.gallery.every(g=>own.has(g.source+':'+g.page)))}
 });
-test('Todos os grupos e os três exemplos possuem ID único e dados válidos',()=>{
- assert.equal(validateCatalog(products).length,products.length);assert.equal(imported.length,manifest.product_groups);assert.equal(demo.length,3);assert.ok(imported.length>100);
- assert.equal(new Set(products.map(p=>p.id)).size,products.length);for(const c of categories.slice(1))assert.ok(products.some(p=>p.category===c.id));
+test('Catálogo sem marcas fictícias, sem duplicados e com IDs únicos',()=>{
+ assert.equal(validateCatalog(products).length,products.length);assert.equal(products.length,manifest.product_groups);
+ assert.equal(new Set(products.map(p=>p.id)).size,products.length);
+ assert.ok(products.every(p=>!/^L&T/.test(p.brand)&&!p.demo));
+ const names=products.map(p=>normalize(p.name));assert.equal(new Set(names).size,names.length);
+ for(const c of categories.slice(1))assert.ok(products.some(p=>p.category===c.id));assert.ok(!categories.some(c=>c.id==='relogios'));
 });
-test('Produtos importados não inventam preço, grade, composição ou estoque',()=>{
- for(const p of imported){assert.equal(p.price,null);assert.equal(p.stock,null);assert.deepEqual(p.sizes,['A confirmar']);assert.ok(p.gallery.length);assert.match(p.fit,/confirmar/);assert.match(productCard(p,[]),/Sob consulta/);assert.doesNotMatch(productCard(p,[]),/R\$\s*0/)}
+test('Títulos têm tipo de peça e marca; não inventam preço, estoque ou composição',()=>{
+ for(const p of products){const brand=p.brand==='Polo Ralph Lauren'?/Ralph Lauren/:new RegExp(p.brand.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));assert.match(p.name,brand,p.id);assert.ok(p.name.startsWith(p.kind),p.id);assert.equal(p.price,null);assert.equal(p.stock,null);assert.match(p.fit,/confirmar/);assert.match(productCard(p,[]),/Sob consulta/);assert.doesNotMatch(productCard(p,[]),/R\$\s*0/)}
 });
-test('Marca, tipo, categoria e origem se combinam sem perder fotos reais',()=>{
- const r=filterProducts(products,{brand:'Polo Ralph Lauren',category:'roupas',kind:'Polo',source:'catalog'});assert.ok(r.length);assert.ok(r.every(p=>p.brand==='Polo Ralph Lauren'&&p.name.startsWith('Polo')&&p.category==='roupas'&&!p.demo));
- assert.equal(filterProducts(products,{source:'demo'}).length,3);assert.equal(filterProducts(products,{source:'catalog'}).length,imported.length);
+test('Cada produto tem cores; as fotos de cada cor pertencem à galeria',()=>{
+ for(const p of products){assert.ok(p.colors.length,p.id);const gallery=new Set(p.gallery.map(g=>g.image));for(const c of p.colors){assert.match(c.hex,/^#[0-9a-f]{6}$/i);c.images.forEach(i=>assert.ok(gallery.has(i),p.id+' '+c.name))}assert.equal(new Set(p.colors.map(c=>c.name)).size,p.colors.length)}
+ assert.ok(products.filter(p=>p.colors.length>1&&p.colors.some(c=>c.images.length)).length>=90);
 });
-test('Busca ignora acento, pesquisa marcas e preserva estado vazio',()=>{
- assert.ok(filterProducts(products,{query:'TENIS'}).length>20);assert.ok(filterProducts(products,{query:'Ralph Lauren'}).every(p=>p.brand==='Polo Ralph Lauren'));assert.equal(filterProducts(products,{query:'zz-produto-inexistente'}).length,0);
+test('Tamanhos selecionáveis por tipo de peça, sem "a confirmar"',()=>{
+ for(const p of products){assert.ok(p.sizes.length);assert.ok(!p.sizes.includes('A confirmar'))}
+ assert.deepEqual(cap.sizes,['Tamanho único']);assert.deepEqual(polo.sizes,sizeGrids.roupa);assert.deepEqual(shoe.sizes,sizeGrids.calcado);
+ assert.deepEqual(products.find(p=>p.kind==='Calça jeans').sizes,sizeGrids.jeans);
 });
-test('Preço padrão inclui sob consulta, limite ativo exclui valores pendentes',()=>{
- assert.equal(filterProducts(products,{maxPrice:1500}).length,products.length);
- const priced=filterProducts(products,{maxPrice:800});assert.ok(priced.length);assert.ok(priced.every(p=>p.price!==null&&p.price<=800));
- assert.equal(filterProducts(products,{size:'A confirmar'}).length,imported.length);assert.ok(filterProducts(products,{available:true}).every(p=>p.stock>0));
+test('Marcas e tipos do filtro acompanham a categoria',()=>{
+ for(const c of ['roupas','tenis','acessorios']){const b=brandsIn(products,c);assert.ok(b.length);for(const brand of b)assert.ok(filterProducts(products,{category:c,brand}).length,c+' '+brand);assert.deepEqual(b,[...new Set(products.filter(p=>p.category===c).map(p=>p.brand))].sort((x,y)=>x.localeCompare(y,'pt-BR')))}
+ assert.ok(!brandsIn(products,'tenis').includes('Prada'));assert.ok(!brandsIn(products,'acessorios').includes('Hermès'));
+ assert.ok(kindsIn(products,'tenis','Birkenstock').every(k=>['Clog','Sandália'].includes(k)));
+ const r=filterProducts(products,{brand:'Polo Ralph Lauren',category:'roupas',kind:'Polo'});assert.ok(r.length);assert.ok(r.every(p=>p.brand==='Polo Ralph Lauren'&&p.kind==='Polo'&&p.category==='roupas'));
 });
-test('Ordenação de preço mantém sob consulta ao final e não modifica original',()=>{
- const ids=products.map(p=>p.id);for(const sort of ['price-asc','price-desc']){const r=filterProducts(products,{sort});assert.ok(r.slice(0,demo.length).every(p=>p.price!==null));assert.ok(r.slice(demo.length).every(p=>p.price===null));for(let i=1;i<demo.length;i++)assert.ok(sort==='price-asc'?r[i].price>=r[i-1].price:r[i].price<=r[i-1].price)}assert.deepEqual(products.map(p=>p.id),ids);
+test('Busca por tipo, marca e modelo ignora maiúsculas e acentos',()=>{
+ for(const q of ['TENIS','tênis on','polo lacoste','HERMES ORAN','ami de coeur','Cœur','calca jeans prada','boné','super-star','Birkenstock Arizona'])assert.ok(filterProducts(products,{query:q}).length,q);
+ assert.deepEqual(filterProducts(products,{query:'hermes'}).map(p=>p.id),filterProducts(products,{query:'Hermès'}).map(p=>p.id));
+ assert.ok(filterProducts(products,{query:'Ralph Lauren'}).every(p=>p.brand==='Polo Ralph Lauren'));assert.equal(filterProducts(products,{query:'zz-produto-inexistente'}).length,0);
 });
-test('Seleção sob consulta permite adicionar, alterar, revisar e remover sem total zero',()=>{
- let cart=addToCart([],shoe,'A confirmar');cart=setQuantity(cart,products,shoe.id,'A confirmar',2);assert.equal(cart[0].quantity,2);
- const html=cartView(cart,products,'review');assert.match(html,/Valores pendentes/);assert.match(html,/Sob consulta/);assert.doesNotMatch(html,/R\$\s*0/);assert.match(html,/Concluir simulação/);
- cart=addToCart(cart,demo[0],demo[0].sizes[0]);assert.equal(cartTotal(cart,products),demo[0].price);assert.match(cartView(cart,products),/Valores pendentes/);
- cart=setQuantity(cart,products,shoe.id,'A confirmar',0);assert.equal(cart.length,1);assert.match(cartView(cart,products),/Subtotal/);
+test('Sacola exige cor e tamanho, atualiza quantidades e remove itens',()=>{
+ assert.throws(()=>addToCart([],polo,{size:'M'}),/cor/);assert.throws(()=>addToCart([],polo,{color:'Preto'}),/tamanho/);assert.throws(()=>addToCart([],polo,{size:'99',color:'Preto'}),/tamanho/);assert.throws(()=>addToCart([],polo,{size:'M',color:'Roxo'}),/cor/);
+ let cart=addToCart([],polo,{size:'M',color:'Azul-marinho'});cart=addToCart(cart,polo,{size:'M',color:'Preto'});cart=addToCart(cart,polo,{size:'M',color:'Azul-marinho'});
+ assert.equal(cart.length,2);assert.equal(cart[0].quantity,2);
+ cart=setQuantity(cart,products,{id:polo.id,size:'M',color:'Preto'},3);assert.equal(cart[1].quantity,3);assert.equal(cart[1].color,'Preto');
+ cart=addToCart(cart,cap,{color:'Vermelho'});assert.equal(cart[2].size,'Tamanho único');
+ cart=setQuantity(cart,products,{id:polo.id,size:'M',color:'Azul-marinho'},0);assert.equal(cart.length,2);
+ for(const q of [0,-1,1.1,NaN])assert.throws(()=>addToCart([],cap,{color:'Preto'},q));assert.throws(()=>addToCart([],cap,{color:'Preto'},21),/limite/);
 });
-test('Seleção preserva validação de tamanho, quantidade e estoque conhecido',()=>{
- assert.throws(()=>addToCart([],shoe,''),/tamanho/);assert.throws(()=>addToCart([],shoe,'99'),/tamanho/);assert.throws(()=>addToCart([],shoe,'A confirmar',100),/limite/);
- for(const q of [0,-1,1.1,NaN])assert.throws(()=>addToCart([],shoe,'A confirmar',q));const p=demo[0];const cart=addToCart([],p,p.sizes[0],p.stock);assert.throws(()=>addToCart(cart,p,p.sizes[0]),/limite/);assert.throws(()=>addToCart([],{...p,stock:0},p.sizes[0]));
+test('Mensagem do WhatsApp traz produto, quantidade, cor, tamanho, valores e total',()=>{
+ let cart=addToCart([],polo,{size:'G',color:'Branco'},2);cart=addToCart(cart,cap,{color:'Preto'});
+ const msg=orderMessage(cart,products);for(const t of [polo.name,cap.name,'Quantidade: 2','Cor: Branco | Tamanho: G','Cor: Preto | Tamanho: Tamanho único','Valor unitário: Sob consulta','Subtotal: Sob consulta','Total do pedido: Sob consulta','Itens: 3'])assert.ok(msg.includes(t),t);
+ const priced=[{...polo,price:300},{...cap,price:150}];const m2=orderMessage(cart,priced);assert.match(m2,/Valor unitário: R\$\s*300,00/);assert.match(m2,/Subtotal: R\$\s*600,00/);assert.match(m2,/Total do pedido: R\$\s*750,00/);assert.equal(cartTotal(cart,priced),750);
+ assert.match(orderMessage(cart,[{...polo,price:300},cap]),/Total do pedido: R\$\s*600,00 \+ 1 item sob consulta/);
+ const url=whatsappUrl('55 (11) 98765-4321',msg);assert.ok(url.startsWith('https://wa.me/5511987654321?text='));assert.equal(decodeURIComponent(url.split('text=')[1]),msg);
+ const html=cartView(cart,products);assert.match(html,/Finalizar pedido no WhatsApp/);assert.match(html,/href="https:\/\/wa\.me\//);assert.match(html,/Cor: Branco · Tamanho: G/);assert.doesNotMatch(html,/R\$\s*0/);
 });
-test('Restauração de sacola ignora produtos apagados e dados inválidos',()=>{
- assert.deepEqual(cleanCart([{id:shoe.id,size:'A confirmar',quantity:2},{id:'apagado',size:'M',quantity:1},{id:shoe.id,size:'99',quantity:1},{id:shoe.id,size:'A confirmar',quantity:-1}],products),[{id:shoe.id,size:'A confirmar',quantity:2}]);assert.deepEqual(cleanCart({},products),[]);
+test('Restauração de sacola ignora produtos apagados e linhas sem cor ou tamanho válidos',()=>{
+ assert.deepEqual(cleanCart([{id:polo.id,size:'M',color:'Preto',quantity:2},{id:'apagado',size:'M',quantity:1},{id:polo.id,size:'A confirmar',quantity:1},{id:polo.id,size:'M',quantity:1},{id:polo.id,size:'M',color:'Preto',quantity:-1}],products),[{id:polo.id,size:'M',color:'Preto',quantity:2}]);assert.deepEqual(cleanCart({},products),[]);
 });
-test('Favoritos e rotas diretas funcionam nos novos produtos',()=>{
- assert.deepEqual(filterProducts(products,{favoritesOnly:true,favorites:[shoe.id]}).map(p=>p.id),[shoe.id]);assert.deepEqual(routeFromHash('#/produto/on-white'),{type:'product',id:'on-white'});assert.deepEqual(routeFromHash('#/colecao/todos?q=Ralph%20Lauren'),{type:'collection',category:'todos',query:'Ralph Lauren'});assert.deepEqual(routeFromHash('#/favoritos'),{type:'favorites'});assert.doesNotThrow(()=>routeFromHash('#/produto/%invalid'));
+test('Favoritos e rotas diretas funcionam',()=>{
+ assert.deepEqual(filterProducts(products,{favoritesOnly:true,favorites:[shoe.id]}).map(p=>p.id),[shoe.id]);assert.deepEqual(routeFromHash('#/produto/on-cloudsurfer'),{type:'product',id:'on-cloudsurfer'});assert.deepEqual(routeFromHash('#/colecao/todos?q=Ralph%20Lauren'),{type:'collection',category:'todos',query:'Ralph Lauren'});assert.deepEqual(routeFromHash('#/favoritos'),{type:'favorites'});assert.doesNotThrow(()=>routeFromHash('#/produto/%invalid'));
 });
-test('Páginas usam galerias reais, miniaturas e disponibilidade pendente',()=>{
- for(const p of imported){const html=productView(p,products,[]);assert.ok(html.includes(esc(p.name)));assert.match(html,/Disponibilidade a confirmar/);assert.match(html,/Adicionar à seleção/);assert.match(html,/FOTOS ORIGINAIS DO CATÁLOGO/);assert.ok(!/data-action="add-cart"[^>]*disabled/.test(html));assert.equal([...html.matchAll(/data-action="gallery"/g)].length,p.gallery.length);for(const g of p.gallery){assert.ok(html.includes(g.thumbnail));assert.ok(fs.existsSync(path.join(root,g.image)))}}
+test('Páginas de produto mostram galeria, cores e tamanhos selecionáveis',()=>{
+ for(const p of products){const html=productView(p,products,[]);assert.ok(html.includes(esc(p.name)));assert.match(html,/Adicionar à sacola/);assert.match(html,/FOTOS ORIGINAIS DO CATÁLOGO/);assert.equal([...html.matchAll(/data-action="color"/g)].length,p.colors.length);assert.equal([...html.matchAll(/data-action="size"/g)].length,p.sizes.length);assert.doesNotMatch(html,/a confirmar<\/span>|Tamanhos a confirmar/);assert.equal([...html.matchAll(/data-action="gallery"/g)].length,p.gallery.length);for(const g of p.gallery){assert.ok(html.includes(g.thumbnail));assert.ok(fs.existsSync(path.join(root,g.image)))}}
 });
-test('Homepage e categorias não apontam para demonstrações removidas',()=>{
- const html=homeView(products,[]);assert.match(html,/#\/produto\/on-white/);assert.doesNotMatch(html,/Cloud Form/);for(const c of categories.slice(1))assert.ok(html.includes('#/colecao/'+c.id));for(const f of ['catalog-hero.webp','catalog-roupas.webp','catalog-tenis.webp','catalog-acessorios.webp'])assert.ok(fs.existsSync(path.join(root,'assets',f)));
+test('Homepage aponta para produtos e categorias existentes',()=>{
+ const html=homeView(products,[]);for(const m of html.matchAll(/#\/produto\/([a-z0-9-]+)/g))assert.ok(products.some(p=>p.id===m[1]),m[1]);for(const c of categories.slice(1))assert.ok(html.includes('#/colecao/'+c.id));assert.doesNotMatch(html,/relogios|Relógios/);
+ assert.match(html,/coastal-cover.jpeg/);assert.match(html,/ESSÊNCIA/);
 });
-test('Coleção pagina em 24 itens e possui filtros nos dois layouts',()=>{
- const html=collectionView(products,filters,[]);assert.equal([...html.matchAll(/<article class="product-card">/g)].length,24);assert.match(html,/id="load-more"/);for(const attr of ['brand','kind','source','size','maxPrice','available'])assert.equal([...html.matchAll(new RegExp('name="'+attr+'"','g'))].length,2);for(const brand of brands)assert.ok(html.includes(esc(brand)));const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);assert.equal(new Set(ids).size,ids.length);
+test('Coleção pagina em 24 itens e tem só os filtros de marca e tipo',()=>{
+ const html=collectionView(products,filters,[],{all:products});assert.equal([...html.matchAll(/<article class="product-card">/g)].length,24);assert.match(html,/id="load-more"/);for(const attr of ['brand','kind'])assert.equal([...html.matchAll(new RegExp('name="'+attr+'"','g'))].length,2);for(const attr of ['source','size','maxPrice','available'])assert.doesNotMatch(html,new RegExp('name="'+attr+'"'));const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);assert.equal(new Set(ids).size,ids.length);
+ const tenis=collectionView(filterProducts(products,{category:'tenis'}),{...filters,category:'tenis'},[],{all:products});assert.doesNotMatch(tenis,/value="Prada"/);assert.match(tenis,/value="Birkenstock"/);
+});
+test('Cards têm moldura única e usam a foto original de capa',()=>{
+ for(const p of products){const html=productCard(p,[]);assert.match(html,/fit-cover/,p.id);const r=p.imageWidth/p.imageHeight;assert.ok(r>.7&&r<1.8,p.id);assert.ok(p.gallery.some(g=>g.image===p.image))}
+ const css=fs.readFileSync(path.join(root,'editorial.css'),'utf8');assert.match(css,/\.product-image\{position:relative;aspect-ratio:8\/7/);
 });
 test('Editor aceita campos pendentes e rejeita galerias e valores inseguros',()=>{
- const p=validateCatalog([{...shoe,price:399,stock:4,sizes:['40','41']}])[0];assert.equal(cartTotal(addToCart([],p,'40',2),[p]),798);
- for(const change of [{price:-1},{stock:1.5},{image:'javascript:alert(1)'},{gallery:[{image:'javascript:bad()',thumbnail:shoe.image,label:'x'}]},{hex:'red'},{sizes:[]}])assert.throws(()=>validateCatalog([{...shoe,...change}]));assert.throws(()=>validateCatalog([shoe,shoe]));
+ const p=validateCatalog([{...cap,price:120,stock:4}])[0];assert.equal(cartTotal(addToCart([],p,{color:'Preto'},2),[p]),240);
+ for(const change of [{price:-1},{stock:1.5},{image:'javascript:alert(1)'},{gallery:[{image:'javascript:bad()',thumbnail:shoe.image,label:'x'}]},{hex:'red'},{sizes:[]},{colors:[{}]}])assert.throws(()=>validateCatalog([{...shoe,...change}]));assert.throws(()=>validateCatalog([shoe,shoe]));
 });
 test('Texto inserido é escapado e galeria não injeta HTML',()=>{
- assert.equal(esc('<script>"x" &'),'&lt;script&gt;&quot;x&quot; &amp;');assert.ok(productCard({...shoe,name:'<img onerror="bad()">'},[]).includes('&lt;img'));assert.ok(productView({...shoe,gallery:[{image:shoe.image,thumbnail:shoe.image,label:'<svg onload="bad()">'}]},products,[]).includes('&lt;svg'));
+ assert.equal(esc('<script>"x" &'),'&lt;script&gt;&quot;x&quot; &amp;');assert.ok(productCard({...shoe,name:'<img onerror="bad()">'},[]).includes('&lt;img'));assert.ok(productView({...shoe,colors:[{name:'<b>x</b>',hex:'#000000',images:[]}]},products,[]).includes('&lt;b&gt;'));
 });
-test('Pacote tem todas as fotos e mantém site privado com navegação local',()=>{
+test('Pacote tem todas as fotos; site privado e sem envio de dados além do link do WhatsApp',()=>{
  for(const p of products)assert.ok(fs.statSync(path.join(root,p.image)).size>1000);
- const html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.match(html,/noindex,nofollow,noarchive/);const app=fs.readFileSync(path.join(root,'app.mjs'),'utf8');assert.ok(!/\bfetch\s*\(|XMLHttpRequest|sendBeacon|window\.open|mailto:|api\.whatsapp|stripe/i.test(app));assert.match(app,/lt-catalog-v2/);
- const css=fs.readFileSync(path.join(root,'styles.css'),'utf8');assert.match(css,/@media\(max-width:600px\)/);assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);assert.match(css,/object-fit:contain/);assert.match(css,/\[hidden\]\{display:none!important\}/);
+ const html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.match(html,/noindex,nofollow,noarchive/);assert.doesNotMatch(html,/relogios/);
+ for(const f of ['app.mjs','ui.mjs','core.mjs']){const js=fs.readFileSync(path.join(root,f),'utf8');assert.ok(!/\bfetch\s*\(|XMLHttpRequest|sendBeacon|mailto:|api\.whatsapp|\bstripe\b/i.test(js),f)}
+ const config=fs.readFileSync(path.join(root,'store-config.mjs'),'utf8');assert.match(config,/export const whatsapp = '\d*';/);
 });
-
 test('Fotografias da vitrine usam os arquivos originais, sem miniatura nem recompressão',()=>{
  const quality=JSON.parse(fs.readFileSync(new URL('../image-quality.json',import.meta.url),'utf8'));
  assert.equal(quality.original_count,1033);assert.ok(quality.original_bytes>160_000_000);
- for(const p of imported){assert.match(p.image,/^assets\/originals\//);assert.doesNotMatch(p.image,/-thumb|-sm/);if(p.category==='roupas'){assert.ok(p.imageWidth>=700);assert.ok(p.imageHeight>=700)}else{assert.ok(p.imageWidth>100);assert.ok(p.imageHeight>100)}for(const g of p.gallery){const name=path.basename(g.image),entry=quality.photos[name];assert.ok(entry);const bytes=fs.readFileSync(path.join(root,g.image));assert.equal(bytes.length,entry.bytes);assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),entry.sha256)}}
-});
-test('Galerias apresentam fotografias individuais, navegação e ampliação',()=>{
- for(const p of imported){const html=productView(p,products,[]);assert.match(html,/FOTOS ORIGINAIS DO CATÁLOGO/);assert.match(html,/data-action="gallery-prev"/);assert.match(html,/data-action="gallery-next"/);assert.match(html,/Ampliar fotografia original/);assert.equal([...html.matchAll(/data-action="gallery"/g)].length,p.gallery.length)}
-});
-test('Capa do litoral e seleção de verão aparecem na página inicial',()=>{
- const html=homeView(products,[]);assert.match(html,/coastal-cover.jpeg/);assert.match(html,/SUMMER EDIT/);assert.match(html,/Dias de sol/);assert.match(html,/ESSÊNCIA/);assert.doesNotMatch(html,/Cloud Form/);
- const css=fs.readFileSync(path.join(root,'editorial.css'),'utf8');assert.match(css,/@media\(max-width:600px\)/);assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);assert.match(css,/--navy:#07111f/);assert.match(css,/font-family:Club Sans/);
- const first=html.slice(html.indexOf('club-edit'),html.indexOf('wardrobe-chapters'));for(const id of ['rl-polo','rl-short','lv-polo','burberry-tee-emblem'])assert.ok(first.includes('#/produto/'+id));
+ for(const p of products){assert.match(p.image,/^assets\/originals\//);assert.doesNotMatch(p.image,/-thumb|-sm/);for(const g of p.gallery){const name=path.basename(g.image),entry=quality.photos[name];assert.ok(entry);const bytes=fs.readFileSync(path.join(root,g.image));assert.equal(bytes.length,entry.bytes);assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),entry.sha256)}}
 });

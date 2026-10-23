@@ -4,31 +4,34 @@ Vitrine masculina em português. Azul-marinho profundo, areia e marfim com clima
 
 ## Fotografias e catálogo
 
-16 PDFs recebidos; três cópias idênticas desconsideradas; 13 arquivos únicos e 742 páginas. Os 198 grupos de modelos e cores usam 1.031 fotografias individuais, extraídas em seus arquivos nativos; dois quadros quase idênticos repetidos foram desconsiderados (registrados em `photo_review` no manifesto). Os bytes das imagens originais são preservados, com dimensões, tamanho e SHA-256 em `image-quality.json`. Não há nova compressão nem transformação generativa dos produtos. Miniaturas pequenas servem apenas aos botões da galeria; as vitrines, detalhes e ampliações usam os originais. As fotografias de menor resolução já presentes nos PDFs são mostradas em até sua largura nativa no detalhe e na ampliação.
+16 PDFs recebidos; três cópias idênticas desconsideradas; 13 arquivos únicos e 742 páginas. São 142 produtos com 1.031 fotografias originais (sem nova compressão; dimensões e SHA-256 em `image-quality.json`). Miniaturas servem só aos botões da galeria.
 
-Ângulos, bordados e detalhes da mesma peça ficam na mesma página de produto; modelos diferentes ganham páginas próprias. Fotos verticais ou horizontais são mostradas inteiras, sem corte, sobre um fundo desfocado da própria foto. `sources` mantém a procedência de cada página. `catalog-import-manifest.json` registra os PDFs e as cópias idênticas. Os nomes descrevem as fotos, sem verificação de autenticidade, estoque ou especificações. Preço e estoque permanecem `null`; a grade fica “A confirmar”. Relógio, óculos e bolsa continuam marcados como exemplos demonstrativos.
+Cada produto tem título com tipo de peça, marca e modelo (quando identificado nas fotos), cores com as fotos correspondentes e a procedência em `sources`. Cadastros repetidos foram unidos e modelos iguais em cores diferentes viraram um produto com seleção de cor; nenhuma foto foi apagada. O registro está em `catalog_review`, no `catalog-import-manifest.json`. As marcas fictícias de exemplo (relógio, óculos e bolsa) foram retiradas; a categoria Relógios volta a aparecer quando houver produtos nela.
+
+Os cards usam uma moldura única (8:7) e uma foto de capa que cabe nela, com corte mínimo nas bordas. Fotos carregam sob demanda.
+
+## Configuração da loja — `dist/store-config.mjs`
+
+- `whatsapp`: número que recebe os pedidos (só números, com 55 e DDD). Vazio: o WhatsApp abre com a mensagem para o cliente escolher o contato.
+- `sizeGrids` e `gridByKind`: grades de tamanho por tipo de peça (roupas P–GG, jeans 38–46, calçados 37–44, boné e gorro “Tamanho único”).
+- `sizesByProduct`: tamanhos de um produto específico.
+- `prices`: preço de cada produto em reais. Sem preço, aparece “Sob consulta”.
+
+Estoque não é inventado: a página informa que a disponibilidade da cor e do tamanho é confirmada pela loja no WhatsApp.
 
 ## Conteúdo e manutenção
 
-- `dist/catalog-products.mjs`: produtos importados, galerias, procedência e campos comerciais.
-- `dist/catalog.mjs`: identidade, categorias e exemplos.
-- `dist/assets/originals/`: fotografias originais e pequenas miniaturas de navegação.
-- `dist/assets/coastal-cover.jpeg`: arte de capa fornecida pelo usuário, preservada sem recompressão; direção visual em `DESIGN.md`.
-- `dist/assets/club-*.otf`: fontes Nimbus, com licença em `dist/assets/font-license.txt`.
-- `dist/editorial.css`: direção visual atual. `dist/styles.css`: estrutura base e componentes.
-- `dist/ui.mjs` e `dist/app.mjs`: páginas e comportamento.
-- `scripts/recover_catalog_photos.py`: recuperação reproduzível dos originais. Uso: `python scripts/recover_catalog_photos.py <diretorio-dos-pdfs> --stage <diretorio-de-preparo>`.
-
-**Editar catálogo**, no rodapé, permite testar campos comerciais e exportar/importar JSON. As alterações ficam no navegador; uma atualização hospedada exige incorporá-las em nova versão. Preço e estoque vazios preservam “sob consulta”. Edições locais antigas conservam os dados comerciais e recebem as novas fotografias quando ainda apontavam às imagens reduzidas.
+- `dist/catalog-products.mjs`: produtos, cores, galerias e procedência.
+- `dist/catalog.mjs`: categorias e aplicação das grades e preços.
+- `dist/assets/originals/`: fotografias originais e miniaturas de navegação.
+- `dist/assets/coastal-cover.jpeg`: capa fornecida pelo proprietário; direção visual em `DESIGN.md`.
+- `dist/editorial.css`: visual atual. `dist/styles.css`: estrutura base.
+- `dist/ui.mjs`, `dist/app.mjs`, `dist/core.mjs`: telas, interações, filtros, sacola e mensagem do pedido.
 
 ## Interações
 
-Categorias, busca sem distinção de acentos, filtros combinados por marca, tipo, origem, preço, tamanho e estoque informado; ordenação; 24 produtos por etapa; favoritos; sacola local; páginas diretas; galerias individuais com botões anterior/próxima; ampliação da fotografia original. A seleção se encerra em uma simulação, sem envio de pedidos ou cobrança.
-
-A configuração de acesso deve ser conferida no provedor de hospedagem. Não há pagamentos, analytics nem contato externo. A capa usa a arte fornecida pelo proprietário.
+Categorias; busca por tipo, marca, modelo e cor sem distinção de maiúsculas ou acentos; filtros de marca e tipo que mostram só o que existe na categoria escolhida; ordenação; favoritos; galerias com setas e deslize; seleção de cor (troca a foto) e de tamanho, obrigatórias antes de adicionar à sacola; sacola com quantidades; “Finalizar pedido no WhatsApp” com nome, marca, cor, tamanho, quantidade, valor unitário, subtotal e total.
 
 ## Verificação
 
-`node --test tests/store.test.mjs`
-
-20 verificações de integridade das fotografias, cobertura das páginas, dados comerciais pendentes, filtros, rotas, galerias, favoritos, edição, segurança e seleção local. Sintaxe dos módulos também verificada. Fotografias e campanha inspecionadas visualmente. Revisão em navegador (Chromium/Playwright) a 390 px e 1440 px: início, coleção, todas as páginas de produto, busca, filtros, favoritos, sacola, galeria com deslize e ampliação, sem imagens quebradas nem rolagem horizontal.
+`node --test tests/store.test.mjs` — 19 verificações: fotos originais e procedência, ausência de duplicados e de marcas fictícias, títulos, cores, tamanhos, filtros por categoria, busca, sacola, mensagem do WhatsApp, segurança. Validado também no navegador a 390 px e 1440 px.

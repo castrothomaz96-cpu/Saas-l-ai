@@ -16,7 +16,7 @@
     }
   ],
   "pages": 742,
-  "product_groups": 198,
+  "product_groups": 142,
   "unique_photos": 739,
   "sources": [
     {
@@ -111,5 +111,44 @@
       }
     ],
     "note": "Revisão visual de todas as fotos: fotos movidas para o produto e a cor correspondentes, modelos misturados separados em grupos próprios e dois quadros repetidos retirados da galeria (os arquivos continuam em assets/originals)."
+  },
+  "catalog_review": {
+    "merged_duplicates": {
+      "rl-cap": [
+        "rl-polo-cap"
+      ],
+      "rl-tee": [
+        "rl-tee-crew"
+      ],
+      "prada-jeans": [
+        "prada-jeans-blue"
+      ],
+      "moncler-polo-color": [
+        "moncler-polo-patch"
+      ],
+      "dior-black-knit": [
+        "dior-knit-logo"
+      ]
+    },
+    "same_color_merged": {
+      "birkenstock-boston": [
+        "clog-stone",
+        "clog-taupe"
+      ],
+      "hermes-chypre": [
+        "hermes-slide-cream",
+        "hermes-slide-stripe"
+      ]
+    },
+    "color_variants_grouped": "Modelos iguais em cores diferentes (McQueen Oversized, Birkenstock, Golden Goose, Hermès, Loro Piana, On) viraram um produto com seleção de cor; cada cor mantém suas fotos.",
+    "splits": {
+      "ami-heart-small": "fotos de ami-heart-knit de outro modelo",
+      "rl-hoodie-pullover": "moletons sem zíper separados de rl-hoodie"
+    },
+    "removed_fictional_brands": [
+      "L&T Timepieces",
+      "L&T Accessories"
+    ],
+    "note": "Nenhuma foto foi apagada nesta revisão: 1.031 fotos continuam nas galerias."
   }
 }

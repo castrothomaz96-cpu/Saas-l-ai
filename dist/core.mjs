@@ -1,36 +1,74 @@
 export const money = value => value===null||value===undefined?'Sob consulta':new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(value);
+// Busca sem distinção de maiúsculas, minúsculas e acentos.
+export const normalize = s => String(s??'').replace(/œ/gi,'oe').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const categoryWords={roupas:'roupa roupas',tenis:'tenis calcado calcados',acessorios:'acessorio acessorios',relogios:'relogio relogios'};
+export function matchesQuery(p,query){
+  const words=normalize([p.name,p.brand,p.kind,p.color,categoryWords[p.category]||''].join(' ')).split(/[^a-z0-9]+/).filter(Boolean);
+  const terms=normalize(query).split(/[^a-z0-9]+/).filter(Boolean);
+  return terms.every(t=>words.some(w=>w.startsWith(t)));
+}
+const inCategory=(p,category)=>!category||category==='todos'||p.category===category;
+const sortPt=list=>[...new Set(list)].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+// Marcas e tipos com produtos na categoria escolhida.
+export const brandsIn=(products,category)=>sortPt(products.filter(p=>inCategory(p,category)).map(p=>p.brand));
+export const kindsIn=(products,category,brand)=>sortPt(products.filter(p=>inCategory(p,category)&&(!brand||p.brand===brand)).map(p=>p.kind));
 export function filterProducts(products, filters={}) {
-  const q=(filters.query||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
-  let result=products.filter(p=>{
-    const hay=(p.name+' '+p.brand+' '+p.color+' '+(p.kind||'')).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-    return (!filters.category||filters.category==='todos'||p.category===filters.category)&&(!q||hay.includes(q))&&(!filters.maxPrice||Number(filters.maxPrice)>=1500||(p.price!==null&&p.price<=Number(filters.maxPrice)))&&(!filters.brand||p.brand===filters.brand)&&(!filters.kind||p.name.split(' ')[0]===filters.kind)&&(!filters.source||(filters.source==='catalog'?!p.demo:p.demo))&&(!filters.size||p.sizes.includes(filters.size))&&(!filters.available||p.stock>0)&&(!filters.favoritesOnly||(filters.favorites||[]).includes(p.id));
-  });
+  let result=products.filter(p=>inCategory(p,filters.category)&&(!filters.query||matchesQuery(p,filters.query))&&(!filters.brand||p.brand===filters.brand)&&(!filters.kind||p.kind===filters.kind)&&(!filters.favoritesOnly||(filters.favorites||[]).includes(p.id)));
   if(filters.sort==='price-asc') result.sort((a,b)=>(a.price??Infinity)-(b.price??Infinity));
   if(filters.sort==='price-desc') result.sort((a,b)=>(b.price??-Infinity)-(a.price??-Infinity));
   if(filters.sort==='name') result.sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
   return result;
 }
-export function addToCart(cart,product,size,quantity=1){
-  if(!product||!product.sizes.includes(size)) throw new Error('Selecione um tamanho para continuar.');
+export const colorNames=p=>(p.colors||[]).map(c=>c.name);
+// Tamanho e cor são obrigatórios quando o produto tem mais de uma opção.
+export function addToCart(cart,product,{size='',color=''}={},quantity=1){
+  if(!product)throw new Error('Produto não encontrado.');
+  if(product.sizes.length===1)size=product.sizes[0];
+  const colors=colorNames(product);if(colors.length===1)color=colors[0];
+  if(!product.sizes.includes(size)) throw new Error('Selecione um tamanho para continuar.');
+  if(colors.length&&!colors.includes(color)) throw new Error('Selecione uma cor para continuar.');
   if(!Number.isInteger(quantity)||quantity<1) throw new Error('Quantidade inválida.');
-  const existing=cart.find(l=>l.id===product.id&&l.size===size);
+  const same=l=>l.id===product.id&&l.size===size&&(l.color||'')===color;
+  const existing=cart.find(same);
   const total=cart.filter(l=>l.id===product.id).reduce((s,l)=>s+l.quantity,0);
-  if(total+quantity>(product.stock??99)) throw new Error('Quantidade indisponível. O limite da seleção foi atingido.');
-  return existing?cart.map(l=>l===existing?{...l,quantity:l.quantity+quantity}:l):[...cart,{id:product.id,size,quantity}];
+  if(total+quantity>(product.stock??20)) throw new Error('Quantidade indisponível. O limite da seleção foi atingido.');
+  return existing?cart.map(l=>l===existing?{...l,quantity:l.quantity+quantity}:l):[...cart,{id:product.id,size,color,quantity}];
 }
-export function setQuantity(cart,products,id,size,quantity){
+export function setQuantity(cart,products,{id,size,color=''},quantity){
   if(!Number.isInteger(quantity)||quantity<0) throw new Error('Quantidade inválida.');
-  if(quantity===0) return cart.filter(l=>!(l.id===id&&l.size===size));
+  const same=l=>l.id===id&&l.size===size&&(l.color||'')===color;
+  if(quantity===0) return cart.filter(l=>!same(l));
   const product=products.find(p=>p.id===id);
-  const rest=cart.filter(l=>!(l.id===id&&l.size===size));
-  return addToCart(rest,product,size,quantity);
+  const index=cart.findIndex(same);
+  const next=addToCart(cart.filter(l=>!same(l)),product,{size,color},quantity);
+  // mantém a linha na mesma posição da sacola
+  if(index<0)return next;const line=next.pop();next.splice(index,0,line);return next;
 }
 export function cartTotal(cart,products){return cart.reduce((sum,l)=>sum+(products.find(p=>p.id===l.id)?.price||0)*l.quantity,0)}
 export function cleanCart(cart,products){
   let result=[];
-  for(const l of Array.isArray(cart)?cart:[]){try{result=addToCart(result,products.find(p=>p.id===l.id),l.size,l.quantity)}catch{}}
+  for(const l of Array.isArray(cart)?cart:[]){try{result=addToCart(result,products.find(p=>p.id===l.id),{size:l.size,color:l.color||''},l.quantity)}catch{}}
   return result;
 }
+// Mensagem do pedido enviada ao WhatsApp da loja.
+export function orderMessage(cart,products){
+  const lines=cart.map(l=>({l,p:products.find(p=>p.id===l.id)})).filter(x=>x.p);
+  const priced=lines.filter(x=>x.p.price!==null&&x.p.price!==undefined);
+  const total=priced.reduce((s,x)=>s+x.p.price*x.l.quantity,0);
+  const pending=lines.length-priced.length;
+  const items=lines.map(({l,p},i)=>[
+    `${i+1}. ${p.name}`,
+    `   Marca: ${p.brand}`,
+    `   Cor: ${l.color||'Única'} | Tamanho: ${l.size}`,
+    `   Quantidade: ${l.quantity}`,
+    `   Valor unitário: ${money(p.price)}`,
+    `   Subtotal: ${p.price===null||p.price===undefined?'Sob consulta':money(p.price*l.quantity)}`,
+    `   Ref.: ${p.id}`].join('\n'));
+  const count=lines.reduce((s,x)=>s+x.l.quantity,0);
+  const totalText=!pending?money(total):priced.length?`${money(total)} + ${pending===1?'1 item':pending+' itens'} sob consulta`:'Sob consulta';
+  return ['Olá, L&T Club! Quero finalizar este pedido:','',items.join('\n\n'),'',`Itens: ${count}`,`Total do pedido: ${totalText}`,'','Pode confirmar a disponibilidade e as formas de pagamento?'].join('\n');
+}
+export const whatsappUrl=(number,text)=>`https://wa.me/${String(number||'').replace(/\D/g,'')}?text=${encodeURIComponent(text)}`;
 export function routeFromHash(hash){
   const [path,query='']=(hash||'#/').replace(/^#/,'').split('?');
   const parts=path.split('/').filter(Boolean);
@@ -52,6 +90,7 @@ export function validateCatalog(input){
     if(!/^#[a-f0-9]{6}$/i.test(p.hex))throw new Error('A cor deve estar em formato hexadecimal, como #15283e.');
     if(!/^(assets\/[^<>"']+|https:\/\/[^<>"']+)$/i.test(p.image))throw new Error('Use uma imagem em assets/ ou um endereço HTTPS.');
     const safeImage=v=>typeof v==='string'&&/^(assets\/[^<>"']+|https:\/\/[^<>"']+)$/i.test(v);
+    if(p.colors!==undefined&&(!Array.isArray(p.colors)||p.colors.some(c=>!c||typeof c.name!=='string'||!c.name.trim())))throw new Error('Cores inválidas.');
     if(p.gallery!==undefined&&(!Array.isArray(p.gallery)||!p.gallery.length||p.gallery.some(g=>!g||!safeImage(g.image)||!safeImage(g.thumbnail)||typeof g.label!=='string')))throw new Error('Galeria inválida. Use imagens em assets/ ou HTTPS.');
     return {...p};
   });
