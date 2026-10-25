@@ -73,9 +73,16 @@ export function routeFromHash(hash){
   const [path,query='']=(hash||'#/').replace(/^#/,'').split('?');
   const parts=path.split('/').filter(Boolean);
   if(parts[0]==='produto') {let id=parts[1]||'';try{id=decodeURIComponent(id)}catch{}return {type:'product',id};}
-  if(parts[0]==='colecao') return {type:'collection',category:parts[1]||'todos',query:new URLSearchParams(query).get('q')||''};
-  if(parts[0]==='favoritos')return {type:'favorites'};
+  const params=new URLSearchParams(query),extra={};
+  // Filtros e ordenação ficam no endereço para voltarem iguais ao retornar à listagem.
+  for(const [key,name] of [['marca','brand'],['tipo','kind'],['ordem','sort']])if(params.get(key))extra[name]=params.get(key);
+  if(parts[0]==='colecao') return {type:'collection',category:parts[1]||'todos',query:params.get('q')||'',...extra};
+  if(parts[0]==='favoritos')return {type:'favorites',...extra};
   return {type:'home'};
+}
+export function listHash({category='todos',query='',brand='',kind='',sort='featured'}={},favorites=false){
+  const params=new URLSearchParams();if(query)params.set('q',query);if(brand)params.set('marca',brand);if(kind)params.set('tipo',kind);if(sort&&sort!=='featured')params.set('ordem',sort);
+  const q=params.toString().replace(/\+/g,'%20');return (favorites?'#/favoritos':'#/colecao/'+category)+(q?'?'+q:'');
 }
 export function validateCatalog(input){
   const cats=['roupas','tenis','relogios','acessorios'];

@@ -16,7 +16,7 @@
     }
   ],
   "pages": 742,
-  "product_groups": 142,
+  "product_groups": 147,
   "unique_photos": 739,
   "sources": [
     {
@@ -149,6 +149,524 @@
       "L&T Timepieces",
       "L&T Accessories"
     ],
-    "note": "Nenhuma foto foi apagada nesta revisão: 1.031 fotos continuam nas galerias."
-  }
+    "note": "Nenhuma foto foi apagada nesta revisão: 1.031 fotos continuam nas galerias.",
+    "second_review": {
+      "removed_from_site": {
+        "photos": 94,
+        "by_reason": {
+          "On Cloudtilt x Loewe: modelo não é mais vendido": 3,
+          "Birkenstock Arizona retirada do site a pedido da loja": 32,
+          "Substituída pelas fotos novas do Ball Star (Organização correta.pdf)": 18,
+          "Substituída pelas fotos novas do Super-Star (org pt 2.pdf)": 29,
+          "Substituída pelas fotos novas da Arizona EVA (Organização correta.pdf)": 11,
+          "Logo tricolor não pertence a esta camiseta (patch redondo)": 1
+        },
+        "archive": "archive/removed-originals (fora do site publicado)"
+      },
+      "removed_products": [
+        {
+          "id": "on-blue",
+          "name": "Tênis On Cloudtilt x Loewe",
+          "replaced_photos": false
+        },
+        {
+          "id": "birkenstock-arizona",
+          "name": "Sandália Birkenstock Arizona",
+          "replaced_photos": false
+        },
+        {
+          "id": "golden-goose-ball-star",
+          "name": "Tênis Golden Goose Ball Star",
+          "replaced_photos": true
+        },
+        {
+          "id": "golden-goose-super-star",
+          "name": "Tênis Golden Goose Super-Star",
+          "replaced_photos": true
+        },
+        {
+          "id": "sandalia-eva",
+          "name": "Sandália Birkenstock Arizona EVA",
+          "replaced_photos": true
+        }
+      ],
+      "removed_sources": [
+        {
+          "file": "catalogo 3-2.pdf",
+          "page": 50
+        },
+        {
+          "file": "catalogo 3-3 (1).pdf",
+          "page": 1
+        },
+        {
+          "file": "catalogo 3-3 (1).pdf",
+          "page": 2
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 18
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 19
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 20
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 21
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 22
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 23
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 24
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 45
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 46
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 47
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 48
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 25
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 26
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 27
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 28
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 29
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 36
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 37
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 38
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 39
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 40
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 41
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 42
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 43
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 44
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 13
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 30
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 31
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 32
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 33
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 34
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 35
+        }
+      ],
+      "replaced_sources": [
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 39,
+          "product": "golden-goose-ball-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 40,
+          "product": "golden-goose-ball-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 41,
+          "product": "golden-goose-ball-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 42,
+          "product": "golden-goose-ball-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 43,
+          "product": "golden-goose-ball-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 47,
+          "product": "golden-goose-ball-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 48,
+          "product": "golden-goose-ball-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 31,
+          "product": "golden-goose-ball-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 32,
+          "product": "golden-goose-ball-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 33,
+          "product": "golden-goose-ball-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 34,
+          "product": "golden-goose-ball-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 44,
+          "product": "golden-goose-ball-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 45,
+          "product": "golden-goose-ball-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 46,
+          "product": "golden-goose-ball-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 35,
+          "product": "golden-goose-ball-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 36,
+          "product": "golden-goose-ball-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 37,
+          "product": "golden-goose-ball-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 38,
+          "product": "golden-goose-ball-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 1,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 2,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 3,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 4,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 21,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 22,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 23,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 24,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 5,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 6,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 7,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 25,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 26,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 27,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 28,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 29,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 30,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 16,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 17,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 18,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 19,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 20,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 8,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 9,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 10,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 11,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 12,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 13,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 14,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catalogo 2-1.pdf",
+          "page": 15,
+          "product": "golden-goose-super-star"
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 13,
+          "product": "sandalia-eva"
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 14,
+          "product": "sandalia-eva"
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 15,
+          "product": "sandalia-eva"
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 16,
+          "product": "sandalia-eva"
+        },
+        {
+          "file": "catolog l_compressed-4 (1).pdf",
+          "page": 17,
+          "product": "sandalia-eva"
+        }
+      ],
+      "on_reclassified": {
+        "on-cloud-x6": [
+          "on-white",
+          "on-black"
+        ],
+        "on-cloudtilt": [
+          "on-white-black",
+          "on-grey-light",
+          "on-grey",
+          "on-beige"
+        ],
+        "on-cloudmonster-2": [
+          "on-black-running",
+          "on-charcoal-running",
+          "on-white-running",
+          "on-orange"
+        ],
+        "removido (Cloudtilt x Loewe)": [
+          "on-blue"
+        ]
+      },
+      "merged": {
+        "hermes-bouncing": [
+          "hermes-knit-sneaker"
+        ]
+      },
+      "added_products": [
+        "louboutin-louis-junior",
+        "louboutin-louis-junior-spikes",
+        "zegna-camurca",
+        "zegna-triple-stitch",
+        "off-white-out-of-office",
+        "off-white-vulcanized",
+        "margiela-replica-gat"
+      ],
+      "added_photos": 183
+    }
+  },
+  "supplement_pdfs": [
+    {
+      "name": "Organização correta.pdf",
+      "pages": 57,
+      "use": "Instruções da loja; 8 fotos novas da Birkenstock Arizona EVA e 50 do Golden Goose Ball Star"
+    },
+    {
+      "name": "org pt 2.pdf",
+      "pages": 26,
+      "use": "20 fotos novas do Golden Goose Super-Star e nomes corretos dos tênis On"
+    },
+    {
+      "name": "Louboutin.pdf",
+      "pages": 4,
+      "use": "4 fotos: Louis Junior e Louis Junior Spikes"
+    },
+    {
+      "name": "zegna.pdf",
+      "pages": 31,
+      "use": "36 fotos (1 repetida desconsiderada): tênis de camurça e Triple Stitch"
+    },
+    {
+      "name": "off-whiote t.pdf",
+      "pages": 37,
+      "use": "39 imagens (2 vazias de 1×1 px desconsideradas): Out Of Office e Vulcanized"
+    },
+    {
+      "name": "maison margiela gats.pdf",
+      "pages": 29,
+      "use": "29 fotos: Replica GAT"
+    }
+  ]
 }

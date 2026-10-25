@@ -4,19 +4,23 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 import path from 'node:path';
 import {products,categories} from '../dist/catalog.mjs';
-import {filterProducts,addToCart,setQuantity,cartTotal,cleanCart,routeFromHash,validateCatalog,brandsIn,kindsIn,orderMessage,whatsappUrl,normalize} from '../dist/core.mjs';
+import {filterProducts,addToCart,setQuantity,cartTotal,cleanCart,routeFromHash,validateCatalog,brandsIn,kindsIn,orderMessage,whatsappUrl,normalize,listHash} from '../dist/core.mjs';
 import {homeView,collectionView,productView,cartView,productCard,esc} from '../dist/ui.mjs';
-import {sizeGrids} from '../dist/store-config.mjs';
-const shoe=products.find(p=>p.id==='on-cloudsurfer'),polo=products.find(p=>p.id==='rl-polo'),cap=products.find(p=>p.id==='rl-cap');
+import {sizeGrids,whatsapp} from '../dist/store-config.mjs';
+const shoe=products.find(p=>p.id==='on-cloud-x6'),polo=products.find(p=>p.id==='rl-polo'),cap=products.find(p=>p.id==='rl-cap');
 const filters={category:'todos',query:'',brand:'',kind:'',sort:'featured'};
 const root=path.resolve(import.meta.dirname,'../dist');
 const manifest=JSON.parse(fs.readFileSync(new URL('../catalog-import-manifest.json',import.meta.url),'utf8'));
 test('Importação elimina três PDFs idênticos e cobre todos os 742 originais',()=>{
  assert.equal(manifest.input_files,16);assert.equal(manifest.unique_files,13);assert.equal(manifest.duplicate_files.length,3);assert.equal(manifest.pages,742);
- const keys=new Set(products.flatMap(p=>p.sources.map(s=>s.file+':'+s.page)));assert.equal(keys.size,742);
- for(const s of manifest.sources){const pages=[...new Set(products.flatMap(p=>p.sources).filter(x=>x.file===s.name).map(x=>x.page))].sort((a,b)=>a-b);assert.deepEqual(pages,Array.from({length:s.pages},(_,i)=>i+1))}
- const photos=products.flatMap(p=>p.gallery.map(g=>g.image));assert.equal(new Set(photos).size,photos.length);
- assert.equal(photos.length+manifest.photo_review.near_duplicate_frames_removed.length,1033);
+ // Páginas de produtos retirados ou com fotos substituídas ficam registradas no manifesto.
+ const review=manifest.catalog_review.second_review,original=new Set(manifest.sources.map(s=>s.name));
+ const all=[...products.flatMap(p=>p.sources),...review.removed_sources,...review.replaced_sources].filter(s=>original.has(s.file));
+ assert.equal(new Set(all.map(s=>s.file+':'+s.page)).size,742);
+ for(const s of manifest.sources){const pages=[...new Set(all.filter(x=>x.file===s.name).map(x=>x.page))].sort((a,b)=>a-b);assert.deepEqual(pages,Array.from({length:s.pages},(_,i)=>i+1))}
+ const photos=products.flatMap(p=>p.gallery);assert.equal(new Set(photos.map(g=>g.image)).size,photos.length);
+ assert.equal(photos.filter(g=>original.has(g.source)).length+review.removed_from_site.photos+manifest.photo_review.near_duplicate_frames_removed.length,1033);
+ const extra=new Set(manifest.supplement_pdfs.map(s=>s.name));assert.ok(photos.every(g=>original.has(g.source)||extra.has(g.source)));
  for(const p of products){const own=new Set(p.sources.map(s=>s.file+':'+s.page));assert.ok(p.gallery.every(g=>own.has(g.source+':'+g.page)))}
 });
 test('Catálogo sem marcas fictícias, sem duplicados e com IDs únicos',()=>{
@@ -63,14 +67,17 @@ test('Mensagem do WhatsApp traz produto, quantidade, cor, tamanho, valores e tot
  const msg=orderMessage(cart,products);for(const t of [polo.name,cap.name,'Quantidade: 2','Cor: Branco | Tamanho: G','Cor: Preto | Tamanho: Tamanho único','Valor unitário: Sob consulta','Subtotal: Sob consulta','Total do pedido: Sob consulta','Itens: 3'])assert.ok(msg.includes(t),t);
  const priced=[{...polo,price:300},{...cap,price:150}];const m2=orderMessage(cart,priced);assert.match(m2,/Valor unitário: R\$\s*300,00/);assert.match(m2,/Subtotal: R\$\s*600,00/);assert.match(m2,/Total do pedido: R\$\s*750,00/);assert.equal(cartTotal(cart,priced),750);
  assert.match(orderMessage(cart,[{...polo,price:300},cap]),/Total do pedido: R\$\s*600,00 \+ 1 item sob consulta/);
+ assert.equal(whatsapp,'5519982179174');assert.match(cartView(cart,products),/href="https:\/\/wa\.me\/5519982179174\?text=/);
  const url=whatsappUrl('55 (11) 98765-4321',msg);assert.ok(url.startsWith('https://wa.me/5511987654321?text='));assert.equal(decodeURIComponent(url.split('text=')[1]),msg);
  const html=cartView(cart,products);assert.match(html,/Finalizar pedido no WhatsApp/);assert.match(html,/href="https:\/\/wa\.me\//);assert.match(html,/Cor: Branco · Tamanho: G/);assert.doesNotMatch(html,/R\$\s*0/);
 });
 test('Restauração de sacola ignora produtos apagados e linhas sem cor ou tamanho válidos',()=>{
  assert.deepEqual(cleanCart([{id:polo.id,size:'M',color:'Preto',quantity:2},{id:'apagado',size:'M',quantity:1},{id:polo.id,size:'A confirmar',quantity:1},{id:polo.id,size:'M',quantity:1},{id:polo.id,size:'M',color:'Preto',quantity:-1}],products),[{id:polo.id,size:'M',color:'Preto',quantity:2}]);assert.deepEqual(cleanCart({},products),[]);
 });
-test('Favoritos e rotas diretas funcionam',()=>{
- assert.deepEqual(filterProducts(products,{favoritesOnly:true,favorites:[shoe.id]}).map(p=>p.id),[shoe.id]);assert.deepEqual(routeFromHash('#/produto/on-cloudsurfer'),{type:'product',id:'on-cloudsurfer'});assert.deepEqual(routeFromHash('#/colecao/todos?q=Ralph%20Lauren'),{type:'collection',category:'todos',query:'Ralph Lauren'});assert.deepEqual(routeFromHash('#/favoritos'),{type:'favorites'});assert.doesNotThrow(()=>routeFromHash('#/produto/%invalid'));
+test('Favoritos e rotas diretas funcionam; filtros e ordenação ficam no endereço',()=>{
+ assert.deepEqual(filterProducts(products,{favoritesOnly:true,favorites:[shoe.id]}).map(p=>p.id),[shoe.id]);assert.deepEqual(routeFromHash('#/produto/on-cloud-x6'),{type:'product',id:'on-cloud-x6'});
+ const f={category:'tenis',query:'super star',brand:'Golden Goose',kind:'Tênis',sort:'name'};const h=listHash(f);assert.equal(h,'#/colecao/tenis?q=super%20star&marca=Golden%20Goose&tipo=T%C3%AAnis&ordem=name');assert.deepEqual(routeFromHash(h),{type:'collection',...f});
+ assert.equal(listHash({category:'roupas'}),'#/colecao/roupas');assert.deepEqual(routeFromHash(listHash({brand:'Prada'},true)),{type:'favorites',brand:'Prada'});assert.deepEqual(routeFromHash('#/colecao/todos?q=Ralph%20Lauren'),{type:'collection',category:'todos',query:'Ralph Lauren'});assert.deepEqual(routeFromHash('#/favoritos'),{type:'favorites'});assert.doesNotThrow(()=>routeFromHash('#/produto/%invalid'));
 });
 test('Páginas de produto mostram galeria, cores e tamanhos selecionáveis',()=>{
  for(const p of products){const html=productView(p,products,[]);assert.ok(html.includes(esc(p.name)));assert.match(html,/Adicionar à sacola/);assert.match(html,/FOTOS ORIGINAIS DO CATÁLOGO/);assert.equal([...html.matchAll(/data-action="color"/g)].length,p.colors.length);assert.equal([...html.matchAll(/data-action="size"/g)].length,p.sizes.length);assert.doesNotMatch(html,/a confirmar<\/span>|Tamanhos a confirmar/);assert.equal([...html.matchAll(/data-action="gallery"/g)].length,p.gallery.length);for(const g of p.gallery){assert.ok(html.includes(g.thumbnail));assert.ok(fs.existsSync(path.join(root,g.image)))}}
@@ -102,6 +109,25 @@ test('Pacote tem todas as fotos; site privado e sem envio de dados além do link
 });
 test('Fotografias da vitrine usam os arquivos originais, sem miniatura nem recompressão',()=>{
  const quality=JSON.parse(fs.readFileSync(new URL('../image-quality.json',import.meta.url),'utf8'));
- assert.equal(quality.original_count,1033);assert.ok(quality.original_bytes>160_000_000);
+ assert.equal(quality.original_count,Object.keys(quality.photos).length);assert.equal(quality.site_count,products.reduce((s,p)=>s+p.gallery.length,0));
+ // Fotos retiradas do site continuam preservadas fora da pasta publicada.
+ for(const [name,entry] of Object.entries(quality.photos))if(entry.location){assert.ok(fs.existsSync(path.join(root,'..',entry.location,name)));assert.ok(!fs.existsSync(path.join(root,'assets/originals',name)))}
  for(const p of products){assert.match(p.image,/^assets\/originals\//);assert.doesNotMatch(p.image,/-thumb|-sm/);for(const g of p.gallery){const name=path.basename(g.image),entry=quality.photos[name];assert.ok(entry);const bytes=fs.readFileSync(path.join(root,g.image));assert.equal(bytes.length,entry.bytes);assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),entry.sha256)}}
+});
+test('Correções da loja: On, fotos substituídas, retiradas e produtos novos',()=>{
+ const get=id=>products.find(p=>p.id===id),names=products.map(p=>p.name);
+ assert.deepEqual(get('on-cloud-x6').colors.map(c=>c.name),['Branco','Preto']);
+ assert.deepEqual(get('on-cloudtilt').colors.map(c=>c.name),['Branco e preto','Cinza-claro','Grafite','Bege']);
+ assert.deepEqual(get('on-cloudmonster-2').colors.map(c=>c.name),['Preto e branco','Grafite','Branco e cinza','Branco e laranja']);
+ for(const n of ['Tênis On Cloudsurfer','Tênis On Running com logo lateral','Tênis On de corrida com solado CloudTec','Sandália Birkenstock Arizona','Tênis Hermès de tricô com H'])assert.ok(!names.includes(n),n);
+ assert.ok(!products.some(p=>/loewe/i.test(p.name)));assert.ok(get('hermes-bouncing').colors.some(c=>c.name==='Preto (tricô)'));
+ for(const [id,file,count] of [['golden-goose-ball-star','Organização correta.pdf',50],['golden-goose-super-star','org pt 2.pdf',20],['sandalia-eva','Organização correta.pdf',8]]){const p=get(id);assert.equal(p.gallery.length,count);assert.ok(p.gallery.every(g=>g.source===file),id);assert.ok(p.colors.every(c=>c.images.length))}
+ assert.equal(get('golden-goose-ball-star').colors.length,11);assert.equal(get('sandalia-eva').colors.length,8);
+ assert.ok(!get('moncler-polo-color').gallery.some(g=>g.image.includes('o-3fbc23a8684677be')));assert.match(get('saint-laurent-knit').image,/o-dd8370141d58c73a/);
+ for(const [id,brand,file] of [['louboutin-louis-junior','Christian Louboutin','Louboutin.pdf'],['louboutin-louis-junior-spikes','Christian Louboutin','Louboutin.pdf'],['zegna-camurca','Zegna','zegna.pdf'],['zegna-triple-stitch','Zegna','zegna.pdf'],['off-white-out-of-office','Off-White','off-whiote t.pdf'],['off-white-vulcanized','Off-White','off-whiote t.pdf'],['margiela-replica-gat','Maison Margiela','maison margiela gats.pdf']]){const p=get(id);assert.ok(p,id);assert.equal(p.brand,brand);assert.equal(p.category,'tenis');assert.equal(p.price,null);assert.ok(p.gallery.every(g=>g.source===file));assert.ok(p.colors.every(c=>c.images.length))}
+ assert.ok(brandsIn(products,'tenis').includes('Zegna'));assert.ok(!brandsIn(products,'roupas').includes('Zegna'));
+});
+test('Página do produto mostra a foto inteira na moldura, sem borda desfocada',()=>{
+ const css=fs.readFileSync(path.join(root,'editorial.css'),'utf8');assert.match(css,/\.main-product-image:before\{display:none\}/);assert.match(css,/\.main-product-image>img\{display:block;width:100%;height:100%;object-fit:cover/);
+ const html=productView(products.find(p=>p.id==='star-white'),products,[]);assert.match(html,/--ratio:1\.24\d;--maxw:490px/);assert.doesNotMatch(html,/main-product-image[^>]*--bg/);assert.match(html,/data-action="back"/);
 });

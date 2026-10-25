@@ -1,8 +1,10 @@
 // Configuração da loja. Edite este arquivo para ajustar o atendimento e os tamanhos.
 
 // WhatsApp que recebe os pedidos: só números, com DDI 55 e DDD. Exemplo: '5511987654321'.
-// Enquanto estiver vazio, o botão abre o WhatsApp com a mensagem pronta para o cliente escolher o contato.
-export const whatsapp = '';
+// O botão "Finalizar pedido" abre https://wa.me/<número> com a mensagem do pedido, no celular e no computador.
+// Número informado pela loja: +55 19 98217-9174. O segundo número enviado (1199374509) tem um dígito a menos
+// que um celular atual e não foi usado; para trocar, basta substituir o número abaixo.
+export const whatsapp = '5519982179174';
 
 // Grades de tamanho por tipo de peça. São as opções que o cliente pode escolher;
 // a disponibilidade de cada tamanho é confirmada pela loja no WhatsApp.

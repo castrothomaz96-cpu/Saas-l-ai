@@ -7,7 +7,7 @@ Melhorar o design da loja masculina L&T Club: a aparência está básica e as ro
 - Preservar os arquivos originais das roupas em dist/assets/originals/. Não recomprimir nem gerar novamente as peças. Não usar miniaturas no lugar de imagens de produto.
 - Imagens de origem pequena não ganham detalhes reais com ampliação. Resolver com enquadramento e layout; solicitar originais maiores quando necessário.
 - Preservar catálogo, galerias, filtros, busca, favoritos e sacola.
-- Não inventar preços, estoque, autenticidade ou medidas. Há 142 produtos importados; não há itens demonstrativos. WhatsApp, grades de tamanho e preços ficam em dist/store-config.mjs.
+- Não inventar preços, estoque, autenticidade ou medidas. Há 147 produtos importados; não há itens demonstrativos. Fotos retiradas ficam em archive/removed-originals (fora do site). WhatsApp, grades de tamanho e preços ficam em dist/store-config.mjs.
 - A capa atual é dist/assets/coastal-cover.jpeg, enviada pelo proprietário. A resolução é 736 × 414; preservar o original e considerar isso ao enquadrar.
 - Antes de redesenhar, ler README.md, DESIGN.md e o código. Implementar melhorias concretas e verificar no celular e no desktop.
 
