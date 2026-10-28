@@ -4,7 +4,7 @@ Vitrine masculina em português. Azul-marinho profundo, areia e marfim com clima
 
 ## Fotografias e catálogo
 
-16 PDFs de catálogo (três cópias idênticas desconsideradas; 13 arquivos únicos e 742 páginas) e 6 PDFs complementares da loja (instruções de organização e catálogos Louboutin, Zegna, Off-White e Maison Margiela). São 147 produtos com 1.120 fotografias originais, extraídas sem nova compressão (dimensões e SHA-256 em `image-quality.json`). Miniaturas servem só aos botões da galeria.
+16 PDFs de catálogo (três cópias idênticas desconsideradas; 13 arquivos únicos e 742 páginas) e 7 PDFs complementares da loja (instruções de organização e catálogos Louboutin, Zegna, Off-White, Maison Margiela e Comme des Garçons PLAY). São 159 produtos com 1.170 fotografias originais, extraídas sem nova compressão (dimensões e SHA-256 em `image-quality.json`). Miniaturas servem só aos botões da galeria.
 
 Fotos retiradas do site (substituídas ou de produtos removidos) ficam preservadas em `archive/removed-originals/`, fora da pasta publicada. O relatório `docs/correcoes-catalogo.pdf` lista os nomes corrigidos, as fotos substituídas, os produtos novos e o que falta preencher.
 
@@ -36,4 +36,4 @@ Categorias; ao voltar de um produto, a listagem retorna ao mesmo ponto, com os m
 
 ## Verificação
 
-`node --test tests/store.test.mjs` — 21 verificações: fotos originais e procedência, ausência de duplicados e de marcas fictícias, títulos, cores, tamanhos, filtros por categoria, busca, sacola, mensagem do WhatsApp, segurança. Validado também no navegador a 390 px e 1440 px.
+`node --test tests/store.test.mjs` — 22 verificações: fotos originais e procedência, ausência de duplicados e de marcas fictícias, títulos, cores, tamanhos, filtros por categoria, busca, sacola, mensagem do WhatsApp, segurança. Validado também no navegador a 390 px e 1440 px.

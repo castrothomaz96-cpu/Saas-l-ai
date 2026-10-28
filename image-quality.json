@@ -1,6 +1,6 @@
 {
-  "original_count": 1216,
-  "original_bytes": 193013765,
+  "original_count": 1266,
+  "original_bytes": 199929504,
   "photos": {
     "o-4603ad28d419cce0.jpeg": {
       "width": 1440,
@@ -8973,7 +8973,457 @@
       "original": true,
       "source_pdf": "maison margiela gats.pdf",
       "page": 29
+    },
+    "o-7a719212f258e3e4.jpeg": {
+      "width": 1252,
+      "height": 1252,
+      "bytes": 174018,
+      "sha256": "7a719212f258e3e467a736d99131525aaa940c30307712d3dee1bf52a68a9c70",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 3
+    },
+    "o-0e63abca9aeb0adf.jpeg": {
+      "width": 1252,
+      "height": 1252,
+      "bytes": 170026,
+      "sha256": "0e63abca9aeb0adfbae7fd3e476b7c3298e2c1e1109340a459a90a212ed2da7e",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 2
+    },
+    "o-adbd0909400bdf6c.jpeg": {
+      "width": 1252,
+      "height": 1252,
+      "bytes": 167721,
+      "sha256": "adbd0909400bdf6cf3391a5e1522e753a11a1c5ed2d67c6f774a25e9356a5fe2",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 1
+    },
+    "o-939935bbe991c3c5.jpeg": {
+      "width": 1252,
+      "height": 1252,
+      "bytes": 183548,
+      "sha256": "939935bbe991c3c594edf86591f16278496f5ad57638a9e16063a954ebfd738e",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 4
+    },
+    "o-4697d9da9cfc684a.jpeg": {
+      "width": 1252,
+      "height": 1252,
+      "bytes": 162355,
+      "sha256": "4697d9da9cfc684ae6d65d29255e681e164d88490119fe13c15f4742c80f3553",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 7
+    },
+    "o-54bba358516911a7.jpeg": {
+      "width": 939,
+      "height": 1252,
+      "bytes": 148108,
+      "sha256": "54bba358516911a74ee9214872d6fa83d7e16dc320e46a8c1e047af3e9d3847d",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 5
+    },
+    "o-2b8ce0513bba7201.jpeg": {
+      "width": 1252,
+      "height": 1252,
+      "bytes": 173914,
+      "sha256": "2b8ce0513bba720156ba0835790ad79cf5130369f6900a95006af119aba07b1b",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 6
+    },
+    "o-a9ad5687e91a6872.jpeg": {
+      "width": 939,
+      "height": 1252,
+      "bytes": 128835,
+      "sha256": "a9ad5687e91a6872e0181ba50e3aebce2263ee9602740a7bf2e550a5ffc4de72",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 8
+    },
+    "o-208d0319d90993a2.jpeg": {
+      "width": 1252,
+      "height": 1156,
+      "bytes": 111705,
+      "sha256": "208d0319d90993a2983744d50d3d4cde7e4b542ff72d4272a1e1058509de61f6",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 42
+    },
+    "o-1abb7dea6841ac69.jpeg": {
+      "width": 1191,
+      "height": 1252,
+      "bytes": 266756,
+      "sha256": "1abb7dea6841ac69a8f785e730d1d252e0aa845546f45371a561fd5325fa1acf",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 20
+    },
+    "o-c5a08c5f9975f9b8.jpeg": {
+      "width": 1252,
+      "height": 939,
+      "bytes": 75704,
+      "sha256": "c5a08c5f9975f9b80297f9a4be919ea90180a35ab866219b785c7eda0203eda3",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 9
+    },
+    "o-0c5749c64249a6ec.jpeg": {
+      "width": 1252,
+      "height": 1147,
+      "bytes": 94571,
+      "sha256": "0c5749c64249a6ec8cac46562d7fb31de60cea6279dd0bb6f635c13d256e0ec4",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 39
+    },
+    "o-c7c040e4f1c956a8.jpeg": {
+      "width": 1252,
+      "height": 1158,
+      "bytes": 84173,
+      "sha256": "c7c040e4f1c956a89192333d93ff67e9ab87eb85bd13e78403257bdea8358894",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 29
+    },
+    "o-10225db8cbf11151.jpeg": {
+      "width": 1252,
+      "height": 1218,
+      "bytes": 102926,
+      "sha256": "10225db8cbf11151e266ac44eede125e660d44c89867547f13233cb057e7c845",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 28
+    },
+    "o-5babd02fb8e7af79.jpeg": {
+      "width": 1252,
+      "height": 1252,
+      "bytes": 195220,
+      "sha256": "5babd02fb8e7af796407ee9fbd4b1bef43c9a1b95ea68c8fab5811eda39ac574",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 43
+    },
+    "o-52bd783c7a08f929.jpeg": {
+      "width": 939,
+      "height": 1252,
+      "bytes": 135967,
+      "sha256": "52bd783c7a08f92962280a0dc5cd7bce0a1516dd3409866528e7d39757f0ca11",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 44
+    },
+    "o-581cd55e73f104e9.jpeg": {
+      "width": 1252,
+      "height": 1091,
+      "bytes": 70775,
+      "sha256": "581cd55e73f104e976c104668377762be463fe24de46441d8349ab8196a733a8",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 18
+    },
+    "o-83ad94a19bbdb185.jpeg": {
+      "width": 1206,
+      "height": 1252,
+      "bytes": 237840,
+      "sha256": "83ad94a19bbdb18537ce99d0b39f94117235235361476cc5d005b6647be19a22",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 23
+    },
+    "o-f820e527d56a0d25.jpeg": {
+      "width": 1252,
+      "height": 1062,
+      "bytes": 77040,
+      "sha256": "f820e527d56a0d253acc563342b0ea2e2b7a5ac95860d3533b453bbabdfc3003",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 17
+    },
+    "o-65ea9154db95dc30.jpeg": {
+      "width": 1252,
+      "height": 1122,
+      "bytes": 82767,
+      "sha256": "65ea9154db95dc30e6426f549cf0c0607a04a2c364b3c4863311722a67303449",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 16
+    },
+    "o-91ba87e19fc891e9.jpeg": {
+      "width": 1252,
+      "height": 1120,
+      "bytes": 66214,
+      "sha256": "91ba87e19fc891e98afa3ba7398bd5dc96c01a24d387194762365aea6d2288e9",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 19
+    },
+    "o-e19ddd970ce9facf.jpeg": {
+      "width": 1174,
+      "height": 1252,
+      "bytes": 96602,
+      "sha256": "e19ddd970ce9facfb7a64b900750be4952988d967e87f122f50ce06bee659983",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 10
+    },
+    "o-88112b02497baa2f.jpeg": {
+      "width": 1252,
+      "height": 939,
+      "bytes": 101415,
+      "sha256": "88112b02497baa2f5d09aa47b1c09c1b1d205dd7784c4c1cb764fd05aca5b3c0",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 11
+    },
+    "o-d8cface15acf16eb.jpeg": {
+      "width": 1252,
+      "height": 1139,
+      "bytes": 87962,
+      "sha256": "d8cface15acf16eb3f43f41987ec5e2d44a75774216613b46995a8ff81b875e7",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 14
+    },
+    "o-cfdf44f991208427.jpeg": {
+      "width": 939,
+      "height": 1252,
+      "bytes": 208799,
+      "sha256": "cfdf44f991208427c1497dff78e2e5a49889d7fa044fb032ee246d6f0e62a787",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 15
+    },
+    "o-556693574e6620b1.jpeg": {
+      "width": 1252,
+      "height": 1172,
+      "bytes": 85916,
+      "sha256": "556693574e6620b16acc14ba8f9d5a550ce3e17dff09565ca97293019442091e",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 30
+    },
+    "o-ee24cc3da3a98d4d.jpeg": {
+      "width": 1252,
+      "height": 1039,
+      "bytes": 72185,
+      "sha256": "ee24cc3da3a98d4da372228c2270b4d430d2d4158ce2785b3c59dfa63bf15ae1",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 12
+    },
+    "o-58949a16f932e068.jpeg": {
+      "width": 1002,
+      "height": 1252,
+      "bytes": 83872,
+      "sha256": "58949a16f932e0689d9a2c087d11be3090bf9c2b7a410db5d27d068dbb0d82f4",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 13
+    },
+    "o-b243932544cba895.jpeg": {
+      "width": 1252,
+      "height": 1158,
+      "bytes": 66584,
+      "sha256": "b243932544cba8953fd31b8d5fc8c0194cdf88b5d237bcee92ab0ce4e7e80159",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 24
+    },
+    "o-e490ed11fd0c3a30.jpeg": {
+      "width": 996,
+      "height": 876,
+      "bytes": 117376,
+      "sha256": "e490ed11fd0c3a301a959dcc417504cc03d6b4e68856db34cca6b40498f054e4",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 25
+    },
+    "o-5e651c7eaf562b96.jpeg": {
+      "width": 1252,
+      "height": 1152,
+      "bytes": 116033,
+      "sha256": "5e651c7eaf562b9692a57bfe877b3835096e74289ab5447494e0ea411af8def0",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 26
+    },
+    "o-3a6481d939695dfe.jpeg": {
+      "width": 1252,
+      "height": 979,
+      "bytes": 396914,
+      "sha256": "3a6481d939695dfefeeff51d7a2a8c44a7320444339aa68e2a4759fa56bd6387",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 27
+    },
+    "o-5dd0842da1e4e25b.jpeg": {
+      "width": 1252,
+      "height": 1058,
+      "bytes": 83147,
+      "sha256": "5dd0842da1e4e25b924f6bf2141ce6cfe285a934e8ee26fd3a7075f94ae8100f",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 38
+    },
+    "o-6e5c0067a5397406.jpeg": {
+      "width": 1247,
+      "height": 1252,
+      "bytes": 220717,
+      "sha256": "6e5c0067a539740632272c7331fb4b7ab08e1771edbd7d94c9d652e220d0df09",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 40
+    },
+    "o-f2946a78ddd12659.jpeg": {
+      "width": 1252,
+      "height": 1252,
+      "bytes": 282456,
+      "sha256": "f2946a78ddd12659cdfaf15ef049311b4b367ac0a40b5be99188b53cfe61ec14",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 41
+    },
+    "o-092c8947d39f4f0e.jpeg": {
+      "width": 1252,
+      "height": 1208,
+      "bytes": 66666,
+      "sha256": "092c8947d39f4f0ecf182ba54ee660d960b09326d37f6ea432beff13fb48d0a9",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 33
+    },
+    "o-cc9ce1b719cf31af.jpeg": {
+      "width": 1252,
+      "height": 1129,
+      "bytes": 62284,
+      "sha256": "cc9ce1b719cf31af0372d1055581be025aad5510acb760514139c3c4b0cbb962",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 21
+    },
+    "o-c2c6bd0165b0e9d5.jpeg": {
+      "width": 1252,
+      "height": 1027,
+      "bytes": 87835,
+      "sha256": "c2c6bd0165b0e9d574460e3cad7a556b2a7c3a88a7923de6889ed65e9cccb6d6",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 22
+    },
+    "o-3ad6052d58e9e1d5.jpeg": {
+      "width": 1252,
+      "height": 1127,
+      "bytes": 73828,
+      "sha256": "3ad6052d58e9e1d5afccdc556470183ba714df147cf9465f44419b13f4e3143b",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 32
+    },
+    "o-606c0e9829e38ef5.jpeg": {
+      "width": 1231,
+      "height": 1252,
+      "bytes": 111083,
+      "sha256": "606c0e9829e38ef57323c4722d4ac4021f171666b31d3f42b5b322f4f9597476",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 31
+    },
+    "o-1ffc310c867c32f1.jpeg": {
+      "width": 1252,
+      "height": 939,
+      "bytes": 58107,
+      "sha256": "1ffc310c867c32f1e0993387db5bba0e72c822631cacbd8f6a599b89d12849e8",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 34
+    },
+    "o-7064aef43125f20a.jpeg": {
+      "width": 1252,
+      "height": 1177,
+      "bytes": 115070,
+      "sha256": "7064aef43125f20a09274d90e5dc4092ff6cc6bb96425712654dd037cb589d49",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 35
+    },
+    "o-4af101ab00f94596.jpeg": {
+      "width": 1095,
+      "height": 1252,
+      "bytes": 108998,
+      "sha256": "4af101ab00f94596ad1f4cd2c6bdaae90a5d2092e9c4057fd6cb379bff2d7153",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 36
+    },
+    "o-2bde78c664c16720.jpeg": {
+      "width": 1083,
+      "height": 1252,
+      "bytes": 252572,
+      "sha256": "2bde78c664c1672026e20e0ee82e9b998cff803d772119e85e59dbd62f36d1d8",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 37
+    },
+    "o-32ea1b48f8b04ff0.jpeg": {
+      "width": 939,
+      "height": 1252,
+      "bytes": 375596,
+      "sha256": "32ea1b48f8b04ff067be064850cba26727fcba73f29d10ffca6cc131adc34184",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 50
+    },
+    "o-cd2c394551dd9c5f.jpeg": {
+      "width": 1252,
+      "height": 939,
+      "bytes": 157918,
+      "sha256": "cd2c394551dd9c5fdbae0c15ba3387eecd24986a9f10d278430a7a1c9895694f",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 49
+    },
+    "o-76d812a337789167.jpeg": {
+      "width": 939,
+      "height": 1252,
+      "bytes": 278112,
+      "sha256": "76d812a337789167513d9f5560eb628c45ab373c13615d863827edb0c83e2f94",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 51
+    },
+    "o-2a9e67f8baed91fb.jpeg": {
+      "width": 1252,
+      "height": 1252,
+      "bytes": 134589,
+      "sha256": "2a9e67f8baed91fbe1ab806879c9d6be6e1a270f265fce7e0dc276788d89f1d6",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 52
+    },
+    "o-b56f98f8a8a37ce8.jpeg": {
+      "width": 1252,
+      "height": 1252,
+      "bytes": 45734,
+      "sha256": "b56f98f8a8a37ce8d54a2ef4f304ec6dea05a2eeca42919e46cdcf11ca65ca80",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 53
+    },
+    "o-0593c6f3a906d111.jpeg": {
+      "width": 1252,
+      "height": 1252,
+      "bytes": 57186,
+      "sha256": "0593c6f3a906d11160a9394d268233f7e69518d11d4ab58af2f68b45bafe7243",
+      "original": true,
+      "source_pdf": "cdg 1.pdf",
+      "page": 54
     }
   },
-  "site_count": 1120
+  "site_count": 1170
 }

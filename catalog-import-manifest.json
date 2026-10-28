@@ -16,7 +16,7 @@
     }
   ],
   "pages": 742,
-  "product_groups": 147,
+  "product_groups": 159,
   "unique_photos": 739,
   "sources": [
     {
@@ -635,7 +635,21 @@
         "margiela-replica-gat"
       ],
       "added_photos": 183
-    }
+    },
+    "cdg_added": [
+      "cdg-heart-long-sleeve",
+      "cdg-heart-tee",
+      "cdg-big-heart-tee",
+      "cdg-outline-heart-tee",
+      "cdg-outline-logo-tee",
+      "cdg-double-heart-tee",
+      "cdg-stacked-heart-tee",
+      "cdg-hem-heart-tee",
+      "cdg-sleeve-print-long-sleeve",
+      "cdg-polo",
+      "cdg-stacked-heart-zip-hoodie",
+      "cdg-heart-zip-hoodie"
+    ]
   },
   "supplement_pdfs": [
     {
@@ -667,6 +681,11 @@
       "name": "maison margiela gats.pdf",
       "pages": 29,
       "use": "29 fotos: Replica GAT"
+    },
+    {
+      "name": "cdg 1.pdf",
+      "pages": 54,
+      "use": "50 fotos: Comme des Garçons PLAY (camisetas, mangas longas, polo e moletons); 4 fotos repetidas no próprio PDF desconsideradas (páginas 45–48)"
     }
   ]
 }

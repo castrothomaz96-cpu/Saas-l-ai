@@ -131,3 +131,9 @@ test('Página do produto mostra a foto inteira na moldura, sem borda desfocada',
  const css=fs.readFileSync(path.join(root,'editorial.css'),'utf8');assert.match(css,/\.main-product-image:before\{display:none\}/);assert.match(css,/\.main-product-image>img\{display:block;width:100%;height:100%;object-fit:cover/);
  const html=productView(products.find(p=>p.id==='star-white'),products,[]);assert.match(html,/--ratio:1\.24\d;--maxw:490px/);assert.doesNotMatch(html,/main-product-image[^>]*--bg/);assert.match(html,/data-action="back"/);
 });
+test('Comme des Garçons PLAY: 12 modelos do PDF, sem fotos repetidas',()=>{
+ const cdg=products.filter(p=>p.brand==='Comme des Garçons PLAY');assert.equal(cdg.length,12);
+ assert.ok(cdg.every(p=>p.category==='roupas'&&p.price===null&&p.gallery.every(g=>g.source==='cdg 1.pdf')&&p.colors.every(c=>c.images.length)));
+ assert.equal(cdg.reduce((s,p)=>s+p.gallery.length,0),50);assert.ok(brandsIn(products,'roupas').includes('Comme des Garçons PLAY'));assert.ok(!brandsIn(products,'tenis').includes('Comme des Garçons PLAY'));
+ for(const q of ['comme des garcons','play coracao','polo comme des garçons','moletom play'])assert.ok(filterProducts(products,{query:q}).some(p=>p.brand==='Comme des Garçons PLAY'),q);
+});

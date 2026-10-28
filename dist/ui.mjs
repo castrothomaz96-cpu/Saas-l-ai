@@ -1,6 +1,6 @@
-import {categories} from './catalog.mjs?v=7';
-import {money,cartTotal,brandsIn,kindsIn,orderMessage,whatsappUrl} from './core.mjs?v=7';
-import {whatsapp} from './store-config.mjs?v=7';
+import {categories} from './catalog.mjs?v=8';
+import {money,cartTotal,brandsIn,kindsIn,orderMessage,whatsappUrl} from './core.mjs?v=8';
+import {whatsapp} from './store-config.mjs?v=8';
 export const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const paths={search:'<circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/>',heart:'<path d="M20.8 4.9a5.5 5.5 0 0 0-7.8 0L12 6l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 22l8.8-9.3a5.5 5.5 0 0 0 0-7.8Z"/>',bag:'<path d="M5 7h14l1 14H4L5 7Z"/><path d="M9 8V5a3 3 0 0 1 6 0v3"/>',menu:'<path d="M3 7h18M3 12h18M3 17h18"/>',close:'<path d="m6 6 12 12M18 6 6 18"/>',arrow:'<path d="M5 12h14m-6-6 6 6-6 6"/>',filter:'<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2.5"/><circle cx="15" cy="17" r="2.5"/>',check:'<path d="m5 12 4 4L19 6"/>',plus:'<path d="M12 5v14M5 12h14"/>',minus:'<path d="M5 12h14"/>',chevron:'<path d="m6 9 6 6 6-6"/>',shield:'<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3Z"/><path d="m8 12 3 3 5-6"/>',box:'<path d="m12 3 9 5-9 5-9-5 9-5Zm-9 5v10l9 5 9-5V8M12 13v10M7 5.8l9 5"/>',back:'<path d="M20 12H4m6-6-6 6 6 6"/>'};
 export const icon=(name,cls='')=>`<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]||paths.arrow}</svg>`;
@@ -25,7 +25,7 @@ const catalog=products;
 const garments=['rl-polo','rl-short','lv-polo','burberry-tee-emblem'].map(pick);
 const more=['rl-tee','lacoste-shorts','burberry-polo-check','moncler-short-banho'].map(pick);
 const sand=['hermes-slide-colors','sandalia-eva','on-cloud-x6','lp-summer-walk'].map(pick);
-const houses=['Polo Ralph Lauren','Prada','Moncler','Dior','Lacoste','Louis Vuitton','Burberry','Hermès','Loro Piana','Ami Paris'];
+const houses=['Polo Ralph Lauren','Prada','Moncler','Dior','Lacoste','Louis Vuitton','Burberry','Hermès','Loro Piana','Ami Paris','Comme des Garçons PLAY'];
 const brandCount=new Set(catalog.map(p=>p.brand)).size,photoCount=catalog.reduce((s,p)=>s+(p.gallery?.length||1),0);
 const fmt=n=>n.toLocaleString('pt-BR');
 const marquee=houses.map(b=>`<a href="#/colecao/todos?q=${encodeURIComponent(b)}">${esc(b)}</a><i aria-hidden="true">✦</i>`).join('');

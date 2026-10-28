@@ -1,6 +1,6 @@
-import {products as defaultProducts,brand,categories} from './catalog.mjs?v=7';
-import {filterProducts,addToCart,setQuantity,cleanCart,routeFromHash,validateCatalog,money,colorNames,listHash} from './core.mjs?v=7';
-import {esc,icon,homeView,collectionView,productView,productCard,cartView,emptyResults,filterOptions,stageStyle} from './ui.mjs?v=7';
+import {products as defaultProducts,brand,categories} from './catalog.mjs?v=8';
+import {filterProducts,addToCart,setQuantity,cleanCart,routeFromHash,validateCatalog,money,colorNames,listHash} from './core.mjs?v=8';
+import {esc,icon,homeView,collectionView,productView,productCard,cartView,emptyResults,filterOptions,stageStyle} from './ui.mjs?v=8';
 
 const $=(s,root=document)=>root.querySelector(s);
 const $$=(s,root=document)=>[...root.querySelectorAll(s)];

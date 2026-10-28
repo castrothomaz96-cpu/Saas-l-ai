@@ -1,7 +1,7 @@
 // Produtos importados: catalog-products.mjs. Tamanhos, preços e WhatsApp: store-config.mjs.
 // Editor no rodapé permite testar alterações locais e exportar JSON.
-import {catalogProducts} from './catalog-products.mjs?v=7';
-import {sizeGrids,gridByKind,sizesByProduct,prices} from './store-config.mjs?v=7';
+import {catalogProducts} from './catalog-products.mjs?v=8';
+import {sizeGrids,gridByKind,sizesByProduct,prices} from './store-config.mjs?v=8';
 export const brand = {
  name:'L&T Club',tagline:'Estilo sem excessos.',
  currency:'BRL',locale:'pt-BR',
