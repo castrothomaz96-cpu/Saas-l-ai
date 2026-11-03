@@ -94,7 +94,7 @@ test('Cards têm moldura única e usam a foto original de capa',()=>{
  for(const p of products){const html=productCard(p,[]);assert.match(html,/fit-cover/,p.id);const r=p.imageWidth/p.imageHeight;assert.ok(r>.7&&r<1.8,p.id);assert.ok(p.gallery.some(g=>g.image===p.image))}
  const css=fs.readFileSync(path.join(root,'editorial.css'),'utf8');assert.match(css,/\.product-image\{position:relative;aspect-ratio:8\/7/);
 });
-test('Editor aceita campos pendentes e rejeita galerias e valores inseguros',()=>{
+test('Validação do catálogo aceita campos pendentes e rejeita galerias e valores inseguros',()=>{
  const p=validateCatalog([{...cap,price:120,stock:4}])[0];assert.equal(cartTotal(addToCart([],p,{color:'Preto'},2),[p]),240);
  for(const change of [{price:-1},{stock:1.5},{image:'javascript:alert(1)'},{gallery:[{image:'javascript:bad()',thumbnail:shoe.image,label:'x'}]},{hex:'red'},{sizes:[]},{colors:[{}]}])assert.throws(()=>validateCatalog([{...shoe,...change}]));assert.throws(()=>validateCatalog([shoe,shoe]));
 });
@@ -136,4 +136,8 @@ test('Comme des Garçons PLAY: 12 modelos do PDF, sem fotos repetidas',()=>{
  assert.ok(cdg.every(p=>p.category==='roupas'&&p.price===null&&p.gallery.every(g=>g.source==='cdg 1.pdf')&&p.colors.every(c=>c.images.length)));
  assert.equal(cdg.reduce((s,p)=>s+p.gallery.length,0),50);assert.ok(brandsIn(products,'roupas').includes('Comme des Garçons PLAY'));assert.ok(!brandsIn(products,'tenis').includes('Comme des Garçons PLAY'));
  for(const q of ['comme des garcons','play coracao','polo comme des garçons','moletom play'])assert.ok(filterProducts(products,{query:q}).some(p=>p.brand==='Comme des Garçons PLAY'),q);
+});
+test('Site não tem mais o editor de catálogo no navegador',()=>{
+ const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),app=fs.readFileSync(path.join(root,'app.mjs'),'utf8');
+ assert.doesNotMatch(html,/Editar catálogo|data-action="editor"|editor-dialog/);assert.doesNotMatch(app,/openEditor|catalog-import|export-catalog|readLocal\('lt-catalog/);
 });

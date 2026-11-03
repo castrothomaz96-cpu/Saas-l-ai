@@ -1,14 +1,13 @@
-import {products as defaultProducts,brand,categories} from './catalog.mjs?v=8';
-import {filterProducts,addToCart,setQuantity,cleanCart,routeFromHash,validateCatalog,money,colorNames,listHash} from './core.mjs?v=8';
-import {esc,icon,homeView,collectionView,productView,productCard,cartView,emptyResults,filterOptions,stageStyle} from './ui.mjs?v=8';
+import {products as defaultProducts,brand,categories} from './catalog.mjs?v=9';
+import {filterProducts,addToCart,setQuantity,cleanCart,routeFromHash,colorNames,listHash} from './core.mjs?v=9';
+import {esc,icon,homeView,collectionView,productView,productCard,cartView,emptyResults,filterOptions,stageStyle} from './ui.mjs?v=9';
 
 const $=(s,root=document)=>root.querySelector(s);
 const $$=(s,root=document)=>[...root.querySelectorAll(s)];
 function readLocal(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}}
 function saveLocal(key,value){try{localStorage.setItem(key,JSON.stringify(value))}catch{toast('O navegador não permitiu salvar. As alterações continuam nesta sessão.')}}
+// O catálogo vem de catalog-products.mjs e store-config.mjs; não há edição pelo navegador.
 let products=defaultProducts;
-// Edições locais do catálogo (chave nova: o catálogo foi reorganizado e as edições antigas não se aplicam).
-try{const local=readLocal('lt-catalog-v3',null);if(local)products=validateCatalog(local)}catch{}
 let cart=cleanCart(readLocal('lt-cart-v1',[]),products);
 let favorites=readLocal('lt-favorites-v1',[]);
 if(!Array.isArray(favorites))favorites=[];
@@ -62,7 +61,6 @@ const infoContent={
  help:['Dúvidas e informações',`<details open><summary>Como faço um pedido?</summary><p>Na página do produto, escolha a cor e o tamanho e toque em “Adicionar à sacola”. Na sacola, ajuste as quantidades e toque em “Finalizar pedido no WhatsApp”. A mensagem já vai com produtos, cores, tamanhos, quantidades e valores.</p></details><details><summary>Os tamanhos estão disponíveis?</summary><p>As opções seguem a grade usual de cada tipo de peça. A disponibilidade de cada cor e tamanho é confirmada pela loja no WhatsApp, antes do pagamento.</p></details><details><summary>Como consultar entrega, troca e garantia?</summary><p>Pelo WhatsApp da loja, no mesmo atendimento do pedido.</p></details>`],
  privacy:['Privacidade',`<p>Favoritos e sacola ficam apenas no armazenamento deste navegador. Não há cadastro, rastreadores de publicidade ou pagamento no site.</p><p>Ao finalizar, o WhatsApp abre com a mensagem do pedido; você decide se envia.</p><button class="button outline" data-action="clear-local">Apagar meus dados locais</button>`],
 };
-function openEditor(selectedId){const p=products.find(x=>x.id===selectedId)||products[0];$('#editor-dialog').innerHTML=`<div class="dialog-heading"><div><p class="eyebrow">L&T CLUB · SEU CATÁLOGO</p><h2 id="editor-title">Seu catálogo.<br>Do seu jeito.</h2></div><button data-close="editor-dialog" class="icon-button" aria-label="Fechar editor">${icon('close')}</button></div><div class="editor-body"><p class="editor-note">As alterações ficam neste navegador. Exporte o JSON para guardar seus dados e incorporá-los a uma nova versão do site.</p><label class="editor-select-label">Produto para editar<select id="editor-product">${products.map(x=>`<option value="${esc(x.id)}" ${x.id===p.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select></label><form id="editor-form" data-product-id="${esc(p.id)}"><div class="editor-grid">${[{key:'name',label:'Nome do produto'},{key:'brand',label:'Marca / linha'},{key:'price',label:'Preço em R$ (vazio = sob consulta)',type:'number',step:'0.01',min:0},{key:'stock',label:'Estoque (vazio = a confirmar)',type:'number',step:1,min:0},{key:'color',label:'Nome da cor'},{key:'hex',label:'Cor hexadecimal'},{key:'badge',label:'Etiqueta, ex.: Novo'},{key:'sizes',label:'Tamanhos, separados por vírgula',value:p.sizes.join(', ')}].map(f=>`<label>${f.label}<input name="${f.key}" type="${f.type||'text'}" ${f.type==='number'?`min="${f.min}" step="${f.step}"`:''} value="${esc(f.value??p[f.key])}" ${['price','stock'].includes(f.key)?'':'required'}></label>`).join('')}<label>Categoria<select name="category">${categories.filter(c=>c.id!=='todos').map(c=>`<option value="${c.id}" ${p.category===c.id?'selected':''}>${c.name}</option>`).join('')}</select></label><label>Imagem (assets/ ou URL HTTPS)<input name="image" value="${esc(p.image)}" required></label></div><label>Descrição<textarea name="description" rows="3" required>${esc(p.description)}</textarea></label><div class="editor-grid"><label>Materiais<textarea name="material" rows="2" required>${esc(p.material)}</textarea></label><label>Medidas e caimento<textarea name="fit" rows="2" required>${esc(p.fit)}</textarea></label></div><p id="editor-error" role="alert" class="size-error"></p><button class="button dark" type="submit">Salvar neste navegador ${icon('check')}</button></form><div class="editor-transfer"><button class="button outline" data-action="export-catalog">Exportar catálogo JSON ↓</button><label class="button outline import-label">Importar catálogo JSON ↑<input id="catalog-import" type="file" accept="application/json,.json"></label><button class="reset-filters" data-action="reset-catalog">Restaurar catálogo original</button></div><p class="editor-footnote">Para trocar fotos, use imagens próprias em HTTPS ou substitua os arquivos da pasta assets na próxima versão do site. O catálogo inicial está centralizado em catalog.mjs.</p></div>`;showDialog('editor-dialog')}
 document.addEventListener('click',e=>{
   const close=e.target.closest('[data-close]');if(close){$('#'+close.dataset.close)?.close();return}
   const back=e.target.closest('[data-action="back"]');if(back){e.preventDefault();if(previousHash&&routeFromHash(previousHash).type!=='product')history.back();else location.hash=back.getAttribute('href');return}
@@ -90,14 +88,10 @@ document.addEventListener('click',e=>{
   if(action==='size-guide'){const p=products.find(x=>x.id===id);if(!p)return;info('Guia de tamanhos',`<p>Opções para este produto: <strong>${p.sizes.map(esc).join(' · ')}</strong>.</p><p>As opções seguem a grade usual deste tipo de peça. A disponibilidade de cada tamanho e as medidas exatas são confirmadas pela L&T Club no WhatsApp, antes do pagamento.</p>`)}
   if(action==='clear-filters'){filters=blankFilters(filters.category);if($('#catalog-search'))$('#catalog-search').value='';if($('#sort'))$('#sort').value='featured';refreshFilterOptions();updateGrid()}
   if(infoContent[action])info(...infoContent[action]);
-  if(action==='editor')openEditor();
-  if(action==='export-catalog'){const blob=new Blob([JSON.stringify(products,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='lt-club-catalogo.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Catálogo exportado para seu dispositivo.')}
-  if(action==='reset-catalog'){products=defaultProducts;saveLocal('lt-catalog-v3',null);cart=cleanCart(cart,products);saveCart();render();openEditor();toast('Catálogo original restaurado.')}
   if(action==='clear-local'){try{['lt-cart-v1','lt-favorites-v1','lt-catalog-v2','lt-catalog-v3'].forEach(k=>localStorage.removeItem(k))}catch{}cart=[];favorites=[];products=defaultProducts;updateCartBadge();closeDialogs();render();toast('Seus dados locais foram apagados.')}
 });
 document.addEventListener('submit',e=>{
   if(e.target.id==='search-form'){e.preventDefault();const query=$('#global-search').value.trim();const next='#/colecao/todos'+(query?'?q='+encodeURIComponent(query):'');closeDialogs();if(location.hash===next){render({focus:true})}else location.hash=next}
-  if(e.target.id==='editor-form'){e.preventDefault();const values=Object.fromEntries(new FormData(e.target)),id=e.target.dataset.productId;try{const updated={...products.find(p=>p.id===id),...values,price:values.price.trim()===''?null:Number(values.price),stock:values.stock.trim()===''?null:Number(values.stock),sizes:values.sizes.split(',').map(s=>s.trim()).filter(Boolean)};if(updated.image!==products.find(p=>p.id===id).image)updated.gallery=[{image:updated.image,thumbnail:updated.image,label:'Foto do produto'}];products=validateCatalog(products.map(p=>p.id===id?updated:p));saveLocal('lt-catalog-v3',products);cart=cleanCart(cart,products);saveCart();render();openEditor(id);toast('Produto atualizado neste navegador.')}catch(error){$('#editor-error').textContent=error.message}}
 });
 document.addEventListener('input',e=>{
   if(e.target.id==='catalog-search'){filters.query=e.target.value;clearTimeout(renderTimer);renderTimer=setTimeout(updateGrid,100)}
@@ -107,8 +101,6 @@ document.addEventListener('change',async e=>{
   if(['brand','kind'].includes(e.target.name)){
     filters[e.target.name]=e.target.value;refreshFilterOptions();updateGrid();
   }
-  if(e.target.id==='editor-product')openEditor(e.target.value);
-  if(e.target.id==='catalog-import'){const file=e.target.files[0];if(!file)return;try{if(file.size>2_000_000)throw new Error('Use um arquivo de até 2 MB.');const imported=validateCatalog(JSON.parse(await file.text()));products=imported;saveLocal('lt-catalog-v3',products);cart=cleanCart(cart,products);favorites=favorites.filter(id=>products.some(p=>p.id===id));saveLocal('lt-favorites-v1',favorites);saveCart();render();openEditor();toast('Catálogo importado neste navegador.')}catch(error){toast(error instanceof SyntaxError?'JSON inválido. Verifique o arquivo.':error.message)}}
 });
 document.addEventListener('error',e=>{if(e.target.tagName==='IMG'&&!e.target.dataset.fallback){e.target.dataset.fallback='true';e.target.src='assets/image-fallback.svg'}},true);
 document.addEventListener('close',()=>{if(!$('dialog[open]'))document.body.classList.remove('has-dialog')},true);

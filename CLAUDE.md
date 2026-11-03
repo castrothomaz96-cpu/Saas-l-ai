@@ -28,7 +28,7 @@ Testes (Node.js 22 ou mais recente): node --test tests/store.test.mjs
 - catalog-import-manifest.json: procedência e duplicados dos PDFs.
 
 ## Limites atuais
-Não há backend, pagamentos ou pedidos reais. Sacola, favoritos e editor usam localStorage. As alterações locais do navegador do proprietário não fazem parte deste arquivo; se houver dados editados, importar o JSON exportado por ele. Os PDFs de origem não acompanham o pacote, mas as fotografias extraídas e sua procedência acompanham. Não há credenciais nem vínculo de publicação neste pacote. Confirme com o proprietário antes de publicar em uma hospedagem ou conectar serviços externos.
+Não há backend, pagamentos ou pedidos reais. Sacola e favoritos usam localStorage. O editor de catálogo no navegador foi retirado a pedido do proprietário: produtos são editados em dist/catalog-products.mjs, e WhatsApp, tamanhos e preços em dist/store-config.mjs. Os PDFs de origem não acompanham o pacote, mas as fotografias extraídas e sua procedência acompanham. Não há credenciais nem vínculo de publicação neste pacote. Confirme com o proprietário antes de publicar em uma hospedagem ou conectar serviços externos.
 
 ## Como usar o pacote
 No computador, extraia o ZIP e abra a pasta LT-Club no Claude Code. Peça para ler CLAUDE.md e executar o pedido acima. Para o chat comum, use o arquivo LT-Club-para-Claude.txt como contexto de código e envie imagens de referência separadamente. O TXT não contém as fotografias nem substitui o projeto completo.
